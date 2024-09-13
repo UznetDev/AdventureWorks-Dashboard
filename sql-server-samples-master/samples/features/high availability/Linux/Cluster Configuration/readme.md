@@ -1,0 +1,1 @@
+# Cluster Configuration Samples for SQL Server on Linux HA Solutions

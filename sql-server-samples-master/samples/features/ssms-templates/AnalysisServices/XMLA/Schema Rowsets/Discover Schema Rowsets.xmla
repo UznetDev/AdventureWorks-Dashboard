@@ -1,0 +1,17 @@
+<Discover xmlns="urn:schemas-microsoft-com:xml-analysis">
+
+	<RequestType>DISCOVER_SCHEMA_ROWSETS</RequestType>
+
+    <Restrictions>
+		<RestrictionList>
+		</RestrictionList>
+	</Restrictions>
+
+    <Properties>
+		<PropertyList>
+   		</PropertyList>
+	</Properties>
+
+</Discover>
+
+

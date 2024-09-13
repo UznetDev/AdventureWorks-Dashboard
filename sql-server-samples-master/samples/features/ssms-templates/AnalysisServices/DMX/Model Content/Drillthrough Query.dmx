@@ -1,0 +1,8 @@
+// ==========================
+//	Drillthrough Query
+// ==========================
+
+SELECT <select list,expr list,*>
+FROM MINING MODEL [<mining model,name,MyModel>].CASES
+WHERE IsTrainingCase() AND IsInNode('<node id,name,>')
+

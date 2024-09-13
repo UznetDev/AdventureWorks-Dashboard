@@ -1,0 +1,16 @@
+IF EXISTS (SELECT * FROM sys.tables WHERE name = N'DimProducts')
+	DROP TABLE DimProducts;
+GO
+
+CREATE TABLE DimProducts
+(
+	[ProductID] INT NOT NULL,
+	[Name] VARCHAR(50) NOT NULL,
+	[Description] NVARCHAR(256) NULL
+)
+WITH
+(
+	HEAP,
+	DISTRIBUTION=ROUND_ROBIN
+);
+GO

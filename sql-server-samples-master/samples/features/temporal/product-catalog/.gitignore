@@ -1,0 +1,10 @@
+*.xproj.user
+.vs/*
+.vscode/*
+bin/*
+obj/*
+*.sln
+*.log
+Properties/PublishProfiles/*
+project.lock.json
+appsettings.development.json

@@ -1,0 +1,4 @@
+<Restore xmlns="http://schemas.microsoft.com/analysisservices/2003/engine">
+  <File>File</File>
+  <DatabaseName>DatabaseName</DatabaseName>
+</Restore>

@@ -1,0 +1,6 @@
+// ==========================
+//	Rename Model
+// ==========================
+
+RENAME MINING MODEL [<old name,name,MyModel>]
+  TO [<new name,name,MyNewModel>]

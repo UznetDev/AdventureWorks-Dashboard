@@ -1,0 +1,12 @@
+name: addpy
+version: v1
+runtime: Python
+src: ./add.py
+entrypoint: add
+replicas: 1
+poolsize: 1
+inputs:
+  x: int
+  y: int
+output:
+  result: int
