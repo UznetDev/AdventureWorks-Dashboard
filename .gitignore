@@ -1,0 +1,8 @@
+env
+.env
+env*
+.idea
+.build
+__pycache__
+.command
+.trash
