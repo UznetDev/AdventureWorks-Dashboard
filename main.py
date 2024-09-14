@@ -94,17 +94,18 @@ with col2:
     st.plotly_chart(fig)
 
 with col3:
-    df = pd.DataFrame(by_p_region, columns=['Total Sold', 'Region'])
-    fig = px.bar(df,  x='Region', y='Total Sold', 
-             color='Total Sold', 
+    df = pd.DataFrame(by_p_region, columns=['Region', 'Total Sold'])
+    fig = px.bar(df,  y='Region', x='Total Sold', 
+             color='Total Sold',
+             color_continuous_scale=['yellow', 'red'],
              orientation='h',
              title='Total Products Sold by Person and Region')
 
     fig.update_layout(
         xaxis_title="Total Sold",
-        yaxis_title="Product",
+        yaxis_title="Region",
         coloraxis_colorbar=dict(
-            title="Region"
+            title="Total Sold"
         )
     )
 
@@ -136,17 +137,30 @@ with col1:
     st.plotly_chart(fig, use_container_width=True)
 
 with col2:
-    st.write(by_day)
-    df = pd.DataFrame(by_day, columns=['Month', 'ProductCategory', option])
-            
-    df['data'] = normalize_data(df[option])
+#     df = pd.DataFrame(by_day, columns=['Day', 'ProductCategory', 'CategorySales'])
 
-    fig = px.line(df, x='Month', y=option, color='ProductCategory',
-                          title='Product Category Sales by Month',
-                          hover_data={option: True})
+#     df['NormalizedCategorySales'] = normalize_data(df['CategorySales'])
+
+#     fig = px.line(df, x='Day', y='CategorySales', color='ProductCategory',
+#                 title='Product Category Sales by Day',
+#                 hover_data={'CategorySales': True})
     
-    st.plotly_chart(fig, use_container_width=True)
+#     st.plotly_chart(fig, use_container_width=True)
 
+
+    df = pd.DataFrame(by_day, columns=['Day', 'ProductCategory', 'CategorySales'])
+
+    df['NormalizedCategorySales'] = normalize_data(df['CategorySales'])
+
+    fig = px.line(df, x='Day', y='CategorySales', color='ProductCategory',
+                title='Product Category Sales by Day',
+                hover_data={'CategorySales': True})
+
+    fig.update_layout(yaxis_type="log",
+                    title={'text': 'Product Category Sales by Day (Log Scale)',
+                            'x':0.5, 'xanchor': 'center'})
+
+    st.plotly_chart(fig, use_container_width=True)
 
 
 if __name__ == "__main__":

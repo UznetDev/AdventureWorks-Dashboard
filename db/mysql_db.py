@@ -182,7 +182,7 @@ class Database:
                 JOIN Person_StateProvince sp ON a.StateProvinceID = sp.StateProvinceID
                 JOIN Person_CountryRegion cr ON sp.CountryRegionCode = cr.CountryRegionCode
                 GROUP BY cr.Name
-                ORDER BY TotalSales
+                ORDER BY TotalSales DESC
                 """
             self.cursor.execute(sql)
             return self.cursor.fetchall()
