@@ -32,10 +32,9 @@ sales_count = db.get_sales_count()
 
 st.title("AdventureWorks Sales Dashboard")
 
-# Create 3 columns for Sales, Profit, and Volume
+
 col1, col2, col3 = st.columns(3)
 
-# Display the metrics
 with col1:
     text1 = '<p style="font-family:sans-serif; color:White; font-size: 15px;">Total Due: 📖 </p>'
     text2 = f'<p style="font-family:sans-serif; color:red; font-size: 20px;">{abbreviate_number(total_due)}</p>'
@@ -53,11 +52,6 @@ with col3:
     text2 = f'<p style="font-family:sans-serif; color:red; font-size: 20px;">{abbreviate_number(sales_count)}</p>'
     st.markdown(text1, unsafe_allow_html=True)
     st.markdown(text2, unsafe_allow_html=True)
-
-
-
-
-
 
 
 
@@ -80,7 +74,7 @@ with col1:
 with col2:
     df = pd.DataFrame(by_tretory, columns=['Territory', 'Category', 'Total Sold'])
     fig = px.bar(df, x='Territory', y='Total Sold', color='Category', 
-                title='Total Products Sold by Territory and Product Category', 
+                title='Sold Category', 
                 labels={'Total Sold': 'Total Sold', 'Category': 'Product Category'},
                 orientation='v', 
                 text='Total Sold')
@@ -101,7 +95,7 @@ with col2:
 with col3:
     df = pd.DataFrame(by_p_region, columns=['Region', 'Category', 'Total Sold'])
     fig = px.bar(df, x='Total Sold', y='Region', color='Category', 
-                title='Total Products Sold by Region and Product Category', 
+                title='Products Category', 
                 labels={'Total Sold': 'Total Sold', 'Category': 'Product Category'},
                 orientation='h', 
                 text='Total Sold')
