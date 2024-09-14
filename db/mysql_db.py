@@ -146,18 +146,21 @@ class Database:
             logging.error(err)
 
 
-    def get_sales_by_tretory(self, option):
+    def get_sales_by_territory(self, option):
         try:
             sql = f"""
-            SELECT st.Name AS Territory, SUM({option}) AS TotalSold
-            FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh
-            USING(SalesOrderID)
-            JOIN Sales_SalesTerritory st
-            USING(TerritoryID)
-            GROUP BY st.Name
-            ORDER BY TotalSold DESC
-                """
+                SELECT st.Name AS Territory, 
+                    pc.Name AS ProductCategory, 
+                    SUM({option}) AS TotalSold
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                GROUP BY st.Name, pc.Name
+                ORDER BY TotalSold DESC
+            """
             self.cursor.execute(sql)
             return self.cursor.fetchall()
         except mysql.connector.Error as err:
@@ -171,19 +174,23 @@ class Database:
     def get_sales_by_p_region(self, option):
         try:
             sql = f"""
-                SELECT cr.Name AS CountryRegion, SUM({option}) AS TotalSales
+                SELECT cr.Name AS CountryRegion, 
+                    pc.Name AS ProductCategory, 
+                    SUM({option}) AS TotalSales
                 FROM Sales_SalesOrderHeader soh
-                JOIN Sales_SalesOrderDetail sod
-                USING(SalesOrderID)
+                JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                 JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
                 JOIN Person_Person pp ON c.PersonID = pp.BusinessEntityID
                 JOIN Person_BusinessEntityAddress bea ON pp.BusinessEntityID = bea.BusinessEntityID
                 JOIN Person_Address a ON bea.AddressID = a.AddressID
                 JOIN Person_StateProvince sp ON a.StateProvinceID = sp.StateProvinceID
                 JOIN Person_CountryRegion cr ON sp.CountryRegionCode = cr.CountryRegionCode
-                GROUP BY cr.Name
+                GROUP BY cr.Name, pc.Name
                 ORDER BY TotalSales DESC
-                """
+            """
             self.cursor.execute(sql)
             return self.cursor.fetchall()
         except mysql.connector.Error as err:

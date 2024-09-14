@@ -67,7 +67,7 @@ option = st.selectbox(
 )
 
 by_category = db.get_sales_by_category(option)
-by_tretory = db.get_sales_by_tretory(option)
+by_tretory = db.get_sales_by_territory(option)
 by_p_region = db.get_sales_by_p_region(option)
 
 
@@ -78,37 +78,42 @@ with col1:
     st.plotly_chart(fig)
 
 with col2:
-    df = pd.DataFrame(by_tretory, columns=['Territory', 'Total Sold'])
-    fig = px.bar(df, x='Territory', y='Total Sold', 
-                color='Total Sold', 
-                color_continuous_scale=['yellow', 'red'], 
-                title='Total Products Sold by Territory')
+    df = pd.DataFrame(by_tretory, columns=['Territory', 'ProductCategory', 'Total Sold'])
+    fig = px.bar(df, x='Territory', y='Total Sold', color='ProductCategory', 
+                title='Total Products Sold by Territory and Product Category', 
+                labels={'Total Sold': 'Total Sold', 'ProductCategory': 'Product Category'},
+                orientation='v', 
+                text='Total Sold')
 
     fig.update_layout(
         xaxis_title="Territory",
         yaxis_title="Total Sold",
+        barmode='stack',
         coloraxis_colorbar=dict(
-            title="Total Sold"
+            title="Product Category"
         )
     )
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
+
+
+
 
 with col3:
-    df = pd.DataFrame(by_p_region, columns=['Region', 'Total Sold'])
-    fig = px.bar(df,  y='Region', x='Total Sold', 
-             color='Total Sold',
-             color_continuous_scale=['yellow', 'red'],
-             orientation='h',
-             title='Total Products Sold by Person and Region')
+    df = pd.DataFrame(by_p_region, columns=['Region', 'ProductCategory', 'Total Sold'])
+    fig = px.bar(df, x='Total Sold', y='Region', color='ProductCategory', 
+                title='Total Products Sold by Region and Product Category', 
+                labels={'Total Sold': 'Total Sold', 'ProductCategory': 'Product Category'},
+                orientation='h', 
+                text='Total Sold')
 
     fig.update_layout(
         xaxis_title="Total Sold",
         yaxis_title="Region",
+        barmode='stack',
         coloraxis_colorbar=dict(
-            title="Total Sold"
+            title="Product Category"
         )
     )
-
     st.plotly_chart(fig, use_container_width=True)
 
 
