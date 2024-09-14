@@ -33,7 +33,11 @@ col1, col2, col3 = st.columns(3)
 
 # Display the metrics
 with col1:
-    
+    text1 = '<p style="font-family:sans-serif; color:White; font-size: 25px;">Total Sales: 📖 </p>'
+    text2 = f'<p style="font-family:sans-serif; color:White; font-size: 20px;">{total_due}</p>'
+    st.markdown(text1, unsafe_allow_html=True)
+    st.markdown(text2, unsafe_allow_html=True)
+
 
 
 
