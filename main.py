@@ -111,27 +111,39 @@ with col3:
     st.plotly_chart(fig, use_container_width=True)
 
 
-by_month = db.get_sales_by_p_month(option)
-by_c_month = db.get_sales_by_c_month(option)
+
+by_month = db.get_sales_by_c_month(option)
+by_day = db.get_sales_by_c_day(option)
+
 
 col1, col2, col3 = st.columns(3)
+# with col2:
+#     df = pd.DataFrame(by_month, columns=['Month', 'TotalValue'])
+#     fig = px.line(df, x='Month', y='TotalValue', title=f'Sales by Month ({option})',
+#                           labels={'Month': 'Month', 'TotalValue': 'Total Sales'})
+#     st.plotly_chart(fig, use_container_width=True)
+
+
 with col1:
-    df = pd.DataFrame(by_month, columns=['Month', 'TotalValue'])
-    fig = px.line(df, x='Month', y='TotalValue', title=f'Sales by Month ({option})',
-                          labels={'Month': 'Month', 'TotalValue': 'Total Sales'})
+    df = pd.DataFrame(by_month, columns=['Month', 'ProductCategory', option])
+            
+    df['data'] = normalize_data(df[option])
+
+    fig = px.line(df, x='Month', y=option, color='ProductCategory',
+                          title='Product Category Sales by Month',
+                          hover_data={option: True})
+    
     st.plotly_chart(fig, use_container_width=True)
 
-
 with col2:
-    df = pd.DataFrame(by_c_month, columns=['Month', 'TotalSales', 'ProductCategory', 'CategorySales'])
+    st.write(by_day)
+    df = pd.DataFrame(by_day, columns=['Month', 'ProductCategory', option])
             
-    fig = px.line(df, x='Month', y='TotalSales', title='Total Sales and Product Category Sales by Month')
+    df['data'] = normalize_data(df[option])
 
-            # Har bir mahsulot kategoriyasi uchun chiziqlar qo'shamiz
-    for category in df['ProductCategory'].unique():
-                category_df = df[df['ProductCategory'] == category]
-                fig.add_scatter(x=category_df['Month'], y=category_df['CategorySales'], 
-                                mode='lines', name=category)
+    fig = px.line(df, x='Month', y=option, color='ProductCategory',
+                          title='Product Category Sales by Month',
+                          hover_data={option: True})
     
     st.plotly_chart(fig, use_container_width=True)
 

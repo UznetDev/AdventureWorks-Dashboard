@@ -218,9 +218,8 @@ class Database:
         try:
             sql = f"""
                 SELECT m.name AS month, 
-                    SUM({option}) AS total_sales, 
-                    pc.Name AS product_category, 
-                    SUM(sod.OrderQty) AS category_sales
+                       pc.Name AS product_category, 
+                       SUM({option}) AS category_sales
                 FROM Sales_SalesOrderHeader s
                 JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
                 JOIN Production_Product p ON sod.ProductID = p.ProductID
@@ -229,6 +228,29 @@ class Database:
                 JOIN month m ON MONTH(s.DueDate) = m.number
                 GROUP BY m.name, m.number, pc.Name
                 ORDER BY m.number
+                """
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+
+    def get_sales_by_c_day(self, option):
+        try:
+            sql = f"""
+                SELECT DAY({option}) AS day, 
+                    pc.Name AS product_category, 
+                    SUM(Totaldue) AS category_sales
+                FROM Sales_SalesOrderHeader s
+                JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
+                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                GROUP BY day, pc.Name
+                ORDER BY day
                 """
             self.cursor.execute(sql)
             return self.cursor.fetchall()
