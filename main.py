@@ -75,6 +75,8 @@ with col1:
                   marker=dict(line=dict(color='white', width=2)))
 
     fig.update_layout(
+        # title_font=dict(size=24, family='Arial, bold', color='red'),
+        font=dict(size=16, color='#F39C12'),
         showlegend=True, 
         title_font_size=20,
         title_x=0.5,
@@ -107,6 +109,7 @@ with col3:
     df = pd.DataFrame(by_p_region, columns=['Region', 'Category', 'Total Sold'])
     fig = px.bar(df, x='Total Sold', y='Region', color='Category', 
                 title='Products Category', 
+    # title_font=dict(size=20, family='Arial, bold', color='red'),
                 labels={'Total Sold': 'Total Sold', 'Category': 'Product Category'},
                 orientation='h', 
                 text='Total Sold')
@@ -126,14 +129,28 @@ with col3:
 by_month = db.get_sales_by_c_month(option)
 by_day = db.get_sales_by_c_day(option)
 by_year = db.get_sales_by_c_year(option)
-online_sales_p = db.get_online_persentage(option)
+online_sales_p = db.get_online_persentage()
 
 col, col1, col2, col3 = st.columns(4)
 
 with col:
-    text = '<p style="font-family:sans-serif; color:yellow; font-size: 20px;">Online Sales Persentage!</p>'
-    st.markdown(text, unsafe_allow_html=True)
-    st.write(make_donut(online_sales_p, f'Online Sales by {option}'))
+    df = pd.DataFrame(online_sales_p, columns=['OnlineOrderFlag', 'TotalOrders'])
+    fig = px.pie(df, names='OnlineOrderFlag', values='TotalOrders', hole=0.4, 
+                title='Online vs Offline Orders')
+    fig.update_traces(textinfo='percent+label',
+                    pull=[0.1, 0],
+                    marker=dict(line=dict(color='white', width=5)))
+
+    fig.update_layout(
+    # title_font=dict(size=20, family='Arial, bold', color='red'),
+    font=dict(size=16, color='#F39C12'),
+    showlegend=True,
+    legend=dict(
+        font=dict(size=16),
+        title_font_family="Arial"
+        )
+    )
+    st.plotly_chart(fig)
 
 with col1:
     df = pd.DataFrame(by_month, columns=['Month', 'Category', option])
@@ -178,6 +195,42 @@ with col3:
         )
     )
     st.plotly_chart(fig)
+
+
+data = db.get_map(option)
+df = pd.DataFrame(data, columns=['city', 'Longitude', 'Latitude', option])
+df[option] = pd.to_numeric(df[option], errors='coerce')
+
+fig = px.scatter_mapbox(df,
+                        lat="Latitude", 
+                        lon="Longitude",
+                        hover_data={'city': True, option: True},
+                        size=option, 
+                        color=option, 
+                        size_max=40,
+                        color_discrete_sequence=["fuchsia"],
+                        zoom=3, 
+                        height=300)
+
+fig.update_layout(
+    mapbox_style="white-bg",
+    mapbox_layers=[
+        {
+            "below": 'traces',
+            "sourcetype": "raster",
+            "sourceattribution": "United States Geological Survey",
+            "source": [
+                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
+            ]
+        }
+    ]
+)
+
+fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+st.plotly_chart(fig, use_container_width=True)
+
+
 
 
 if __name__ == "__main__":

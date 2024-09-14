@@ -291,18 +291,45 @@ class Database:
             logging.error(err)
 
 
-    def get_online_persentage(self, option):
+    def get_online_persentage(self):
         try:
             sql = f"""
-                SELECT 
-                    SUM(CASE WHEN OnlineOrderFlag = 1 
-                    THEN OrderQty ELSE 0 END) / SUM(OrderQty) * 100 AS OnlineOrderPercentage
+                    SELECT 
+                        CASE 
+                            WHEN OnlineOrderFlag = 1 THEN 'Online'
+                            ELSE 'Offline'
+                        END AS OrderType,
+                        SUM(OrderQty) AS TotalOrders
+                    FROM Sales_SalesOrderDetail sod
+                    JOIN Sales_SalesOrderHeader soh
+                    ON sod.SalesOrderID = soh.SalesOrderID
+                    GROUP BY OrderType;
+                    """
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+
+    def get_map(self, option):
+        try:
+            sql = f"""
+                SELECT
+                    pat.City AS city,
+                    ST_X(SpatialLocation) AS Longitude, 
+                    ST_Y(SpatialLocation) AS Latitude,
+                    SUM(sod.OrderQty) AS OrderQty
                 FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh 
-                ON sod.SalesOrderID = soh.SalesOrderID
+                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                JOIN Person_BusinessEntityAddress pbea ON pbea.BusinessEntityID = soh.SalesPersonID
+                JOIN Person_Address pat ON pat.AddressID = pbea.AddressID
+                GROUP BY city, Longitude, Latitude
             """
             self.cursor.execute(sql)
-            return round(float(self.cursor.fetchone()[0]), 1)
+            return self.cursor.fetchall()
         except mysql.connector.Error as err:
             logging.error(err)
             self.reconnect()
