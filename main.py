@@ -69,7 +69,7 @@ option = st.selectbox(
 by_category = db.get_sales_by_category(option)
 by_tretory = db.get_sales_by_tretory(option)
 by_p_region = db.get_sales_by_p_region(option)
-by_month = db.get_sales_by_p_month(option)
+
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -110,6 +110,14 @@ with col3:
 
     st.plotly_chart(fig, use_container_width=True)
 
+
+by_month = db.get_sales_by_p_month(option)
+col1, col2, col3 = st.columns(3)
+with col1:
+    df = pd.DataFrame(by_month, columns=['Month', 'TotalValue'])
+    fig = px.line(df, x='Month', y='TotalValue', title=f'Sales by Month ({option})',
+                          labels={'Month': 'Month', 'TotalValue': 'Total Sales'})
+    st.plotly_chart(fig, use_container_width=True)
 
 
 
