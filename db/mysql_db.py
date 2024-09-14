@@ -266,3 +266,45 @@ class Database:
             self.reconnect()
         except Exception as err:
             logging.error(err)
+
+
+    def get_sales_by_c_year(self, option):
+        try:
+            sql = f"""
+                SELECT YEAR(soh.OrderDate) AS Year, 
+                    pc.Name AS ProductCategory, 
+                    SUM({option}) AS TotalSold
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                GROUP BY Year, pc.Name
+                ORDER BY Year, TotalSold DESC
+            """
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+
+    def get_online_persentage(self, option):
+        try:
+            sql = f"""
+                SELECT 
+                    SUM(CASE WHEN OnlineOrderFlag = 1 
+                    THEN OrderQty ELSE 0 END) / SUM(OrderQty) * 100 AS OnlineOrderPercentage
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader soh 
+                ON sod.SalesOrderID = soh.SalesOrderID
+            """
+            self.cursor.execute(sql)
+            return round(float(self.cursor.fetchone()[0]), 1)
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)

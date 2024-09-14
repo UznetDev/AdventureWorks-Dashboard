@@ -30,7 +30,7 @@ def normalize_data(series):
 def make_donut(input_response, input_text, input_color=None):
     
     if input_color is None:
-        input_color = 'blue' if input_response >= 0 else 'red'
+        input_color = 'orange' if input_response >= 0 else 'red'
 
     if input_color == 'blue':
         chart_color = ['#29b5e8', '#155F7A']
@@ -50,16 +50,20 @@ def make_donut(input_response, input_text, input_color=None):
         "% value": [100, 0]
     })
 
-    plot = alt.Chart(source).mark_arc(innerRadius=45, cornerRadius=25).encode(
+    plot = alt.Chart(source).mark_arc(innerRadius=45, cornerRadius=15).encode(
         theta="% value",
         color=alt.Color("Topic:N",
                         scale=alt.Scale(
                             domain=[input_text, ''],
                             range=chart_color),
                         legend=None),
-    ).properties(width=130, height=130)
+    ).properties(width=230, height=230)
 
-    text = plot.mark_text(align='center', color=chart_color[0], font="Lato", fontSize=10, fontWeight=100, fontStyle="italic").encode(text=alt.value(f'{input_response} %'))
+    text = plot.mark_text(align='center', color=chart_color[0], 
+                          font="Lato", 
+                          fontSize=20, 
+                          fontWeight=100, 
+                          fontStyle="italic").encode(text=alt.value(f'{input_response} %'))
     plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=45, cornerRadius=20).encode(
         theta="% value",
         color=alt.Color("Topic:N",
@@ -67,7 +71,7 @@ def make_donut(input_response, input_text, input_color=None):
                             domain=[input_text, ''],
                             range=chart_color),
                         legend=None),
-    ).properties(width=130, height=130)
+    ).properties(width=230, height=230)
     
     return plot_bg + plot + text
 
