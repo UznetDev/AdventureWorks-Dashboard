@@ -248,9 +248,9 @@ class Database:
     def get_sales_by_c_day(self, option):
         try:
             sql = f"""
-                SELECT DAY({option}) AS day, 
+                SELECT DAY(DueDate) AS day, 
                     pc.Name AS product_category, 
-                    SUM(Totaldue) AS category_sales
+                    SUM({option}) AS category_sales
                 FROM Sales_SalesOrderHeader s
                 JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
                 JOIN Production_Product p ON sod.ProductID = p.ProductID

@@ -78,10 +78,10 @@ with col1:
     st.plotly_chart(fig)
 
 with col2:
-    df = pd.DataFrame(by_tretory, columns=['Territory', 'ProductCategory', 'Total Sold'])
-    fig = px.bar(df, x='Territory', y='Total Sold', color='ProductCategory', 
+    df = pd.DataFrame(by_tretory, columns=['Territory', 'Category', 'Total Sold'])
+    fig = px.bar(df, x='Territory', y='Total Sold', color='Category', 
                 title='Total Products Sold by Territory and Product Category', 
-                labels={'Total Sold': 'Total Sold', 'ProductCategory': 'Product Category'},
+                labels={'Total Sold': 'Total Sold', 'Category': 'Product Category'},
                 orientation='v', 
                 text='Total Sold')
 
@@ -99,10 +99,10 @@ with col2:
 
 
 with col3:
-    df = pd.DataFrame(by_p_region, columns=['Region', 'ProductCategory', 'Total Sold'])
-    fig = px.bar(df, x='Total Sold', y='Region', color='ProductCategory', 
+    df = pd.DataFrame(by_p_region, columns=['Region', 'Category', 'Total Sold'])
+    fig = px.bar(df, x='Total Sold', y='Region', color='Category', 
                 title='Total Products Sold by Region and Product Category', 
-                labels={'Total Sold': 'Total Sold', 'ProductCategory': 'Product Category'},
+                labels={'Total Sold': 'Total Sold', 'Category': 'Product Category'},
                 orientation='h', 
                 text='Total Sold')
 
@@ -123,43 +123,26 @@ by_day = db.get_sales_by_c_day(option)
 
 
 col1, col2, col3 = st.columns(3)
-# with col2:
-#     df = pd.DataFrame(by_month, columns=['Month', 'TotalValue'])
-#     fig = px.line(df, x='Month', y='TotalValue', title=f'Sales by Month ({option})',
-#                           labels={'Month': 'Month', 'TotalValue': 'Total Sales'})
-#     st.plotly_chart(fig, use_container_width=True)
-
 
 with col1:
-    df = pd.DataFrame(by_month, columns=['Month', 'ProductCategory', option])
+    df = pd.DataFrame(by_month, columns=['Month', 'Category', option])
             
     df['data'] = normalize_data(df[option])
 
-    fig = px.line(df, x='Month', y=option, color='ProductCategory',
+    fig = px.line(df, x='Month', y=option, color='Category',
                           title='Product Category Sales by Month',
                           hover_data={option: True})
     
     st.plotly_chart(fig, use_container_width=True)
 
 with col2:
-#     df = pd.DataFrame(by_day, columns=['Day', 'ProductCategory', 'CategorySales'])
+    df = pd.DataFrame(by_day, columns=['Day', 'Category', option])
 
-#     df['NormalizedCategorySales'] = normalize_data(df['CategorySales'])
+    df['data'] = normalize_data(df[option])
 
-#     fig = px.line(df, x='Day', y='CategorySales', color='ProductCategory',
-#                 title='Product Category Sales by Day',
-#                 hover_data={'CategorySales': True})
-    
-#     st.plotly_chart(fig, use_container_width=True)
-
-
-    df = pd.DataFrame(by_day, columns=['Day', 'ProductCategory', 'CategorySales'])
-
-    df['NormalizedCategorySales'] = normalize_data(df['CategorySales'])
-
-    fig = px.line(df, x='Day', y='CategorySales', color='ProductCategory',
+    fig = px.line(df, x='Day', y=option, color='Category',
                 title='Product Category Sales by Day',
-                hover_data={'CategorySales': True})
+                hover_data={option: True})
 
     fig.update_layout(yaxis_type="log",
                     title={'text': 'Product Category Sales by Day (Log Scale)',
