@@ -23,6 +23,19 @@ st.markdown(st_style,
             unsafe_allow_html=True)
 
 
+total_due = db.get_total_due()
+
+
+st.title("AdventureWorks Sales Dashboard")
+
+# Create 3 columns for Sales, Profit, and Volume
+col1, col2, col3 = st.columns(3)
+
+# Display the metrics
+with col1:
+    
+
+
 
 if __name__ == "__main__":
     db.create_table_sales_per_day()

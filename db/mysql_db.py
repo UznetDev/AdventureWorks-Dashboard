@@ -82,3 +82,15 @@ class Database:
             self.reconnect()
         except Exception as err:
             logging.error(err)
+
+
+    def get_total_due(self):
+        try:
+            sql = """SELECT SUM(TotalDue) FROM `Sales_SalesOrderHeader`"""
+            self.cursor.execute(sql)
+            return self.cursor.fetchone()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
