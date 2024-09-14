@@ -22,6 +22,9 @@ def abbreviate_number(num):
         return num
     
 
+def normalize_data(series):
+    r = 2 * (series - series.min()) / (series.max() - series.min()) - 1
+    return r
 
 
 def make_donut(input_response, input_text, input_color=None):

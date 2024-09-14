@@ -112,11 +112,27 @@ with col3:
 
 
 by_month = db.get_sales_by_p_month(option)
+by_c_month = db.get_sales_by_c_month(option)
+
 col1, col2, col3 = st.columns(3)
 with col1:
     df = pd.DataFrame(by_month, columns=['Month', 'TotalValue'])
     fig = px.line(df, x='Month', y='TotalValue', title=f'Sales by Month ({option})',
                           labels={'Month': 'Month', 'TotalValue': 'Total Sales'})
+    st.plotly_chart(fig, use_container_width=True)
+
+
+with col2:
+    df = pd.DataFrame(by_c_month, columns=['Month', 'TotalSales', 'ProductCategory', 'CategorySales'])
+            
+    fig = px.line(df, x='Month', y='TotalSales', title='Total Sales and Product Category Sales by Month')
+
+            # Har bir mahsulot kategoriyasi uchun chiziqlar qo'shamiz
+    for category in df['ProductCategory'].unique():
+                category_df = df[df['ProductCategory'] == category]
+                fig.add_scatter(x=category_df['Month'], y=category_df['CategorySales'], 
+                                mode='lines', name=category)
+    
     st.plotly_chart(fig, use_container_width=True)
 
 
