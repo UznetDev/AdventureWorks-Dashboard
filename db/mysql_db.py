@@ -33,8 +33,52 @@ class Database:
             )
             self.cursor = self.connection.cursor()
         except mysql.connector.Error as err:
+            logging.error(f"Error connecting to database: {err}")
+            self.reconnect()
+        except Exception as err:
+            logging.error(f"Unexpected error: {err}")   
+
+
+    def create_table_sales_per_day(self):
+        """
+        Create the 'sales_per_day' table if it does not already exist.
+        """
+        try:
+            sql = """
+            CREATE TABLE IF NOT EXISTS `sales_per_day` (
+                day INT NOT NULL UNIQUE,
+                count INT
+            )
+            """
+            self.cursor.execute(sql)
+            self.connection.commit()
+        except mysql.connector.Error as err:
             logging.error(err)
             self.reconnect()
         except Exception as err:
             logging.error(err)
-
+    
+    
+    def insert_table_sales_per_day(self):
+        try:
+            sql = """SELECT * FROM `sales_per_day`"""
+            self.cursor.execute(sql)
+            result = self.cursor.fetchall()
+            if not result:
+                sql = """
+                INSERT INTO `sales_per_day`(`day`, `count`)
+                SELECT DAY(ssoh.OrderDate) AS day, 
+                    SUM(ssod.OrderQty) AS count 
+                FROM `Sales_SalesOrderHeader` ssoh 
+                JOIN `Sales_SalesOrderDetail` ssod 
+                USING(SalesOrderID)
+                GROUP BY DAY(ssoh.OrderDate)
+                ORDER BY DAY(ssoh.OrderDate);
+                """
+                self.cursor.execute(sql)
+                self.connection.commit()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
