@@ -88,7 +88,33 @@ class Database:
         try:
             sql = """SELECT SUM(TotalDue) FROM `Sales_SalesOrderHeader`"""
             self.cursor.execute(sql)
-            return self.cursor.fetchone()
+            return self.cursor.fetchone()[0]
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+    def get_total_profit(self):
+        try:
+            sql = """SELECT SUM(sod.LineTotal - p.StandardCost * sod.OrderQty) AS profit
+            FROM Sales_SalesOrderDetail sod
+            JOIN Production_Product p
+            USING(ProductID)"""
+            self.cursor.execute(sql)
+            return self.cursor.fetchone()[0]
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+
+    def get_sales_count(self):
+        try:
+            sql = """SELECT COUNT(*) FROM Sales_SalesOrderHeader"""
+            self.cursor.execute(sql)
+            return self.cursor.fetchone()[0]
         except mysql.connector.Error as err:
             logging.error(err)
             self.reconnect()

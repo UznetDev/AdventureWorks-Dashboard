@@ -3,6 +3,7 @@ import sys
 import plotly.express as px
 import streamlit as st
 from loader import *
+from function.function import *
 
 
 st.set_page_config(page_title="Sales Dashboard",
@@ -24,7 +25,8 @@ st.markdown(st_style,
 
 
 total_due = db.get_total_due()
-
+total_profit = db.get_total_profit()
+sales_count = db.get_sales_count()
 
 st.title("AdventureWorks Sales Dashboard")
 
@@ -33,10 +35,24 @@ col1, col2, col3 = st.columns(3)
 
 # Display the metrics
 with col1:
-    text1 = '<p style="font-family:sans-serif; color:White; font-size: 25px;">Total Sales: 📖 </p>'
-    text2 = f'<p style="font-family:sans-serif; color:White; font-size: 20px;">{total_due}</p>'
+    text1 = '<p style="font-family:sans-serif; color:White; font-size: 15px;">Total Due: 📖 </p>'
+    text2 = f'<p style="font-family:sans-serif; color:red; font-size: 20px;">{abbreviate_number(total_due)}</p>'
     st.markdown(text1, unsafe_allow_html=True)
     st.markdown(text2, unsafe_allow_html=True)
+
+with col2:
+    text1 = '<p style="font-family:sans-serif; color:White; font-size: 15px;">Total Profit: 📖 </p>'
+    text2 = f'<p style="font-family:sans-serif; color:red; font-size: 20px;">{abbreviate_number(total_profit)}</p>'
+    st.markdown(text1, unsafe_allow_html=True)
+    st.markdown(text2, unsafe_allow_html=True)
+
+with col3:
+    text1 = '<p style="font-family:sans-serif; color:White; font-size: 15px;">Sales Count: 📖 </p>'
+    text2 = f'<p style="font-family:sans-serif; color:red; font-size: 20px;">{abbreviate_number(sales_count)}</p>'
+    st.markdown(text1, unsafe_allow_html=True)
+    st.markdown(text2, unsafe_allow_html=True)
+
+
 
 
 
