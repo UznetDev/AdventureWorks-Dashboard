@@ -2,6 +2,8 @@ import logging
 import sys
 import plotly.express as px
 import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
 from loader import *
 from function.function import *
 
@@ -53,6 +55,60 @@ with col3:
     st.markdown(text2, unsafe_allow_html=True)
 
 
+
+
+
+
+
+
+option = st.selectbox(
+    'Tanlang: Total Sales (TotalDue) yoki Order Quantity (OrderQty)',
+    ('TotalDue', 'OrderQty')
+)
+
+by_category = db.get_sales_by_category(option)
+by_tretory = db.get_sales_by_tretory(option)
+by_p_region = db.get_sales_by_p_region(option)
+by_month = db.get_sales_by_p_month(option)
+
+col1, col2, col3 = st.columns(3)
+with col1:
+    df = pd.DataFrame(by_category, columns=['Category', 'Total Sold'])
+    fig = px.pie(df, names='Category', values='Total Sold', title='Total Products Sold by Category')
+    st.plotly_chart(fig)
+
+with col2:
+    df = pd.DataFrame(by_tretory, columns=['Territory', 'Total Sold'])
+    fig = px.bar(df, x='Territory', y='Total Sold', 
+                color='Total Sold', 
+                color_continuous_scale=['yellow', 'red'], 
+                title='Total Products Sold by Territory')
+
+    fig.update_layout(
+        xaxis_title="Territory",
+        yaxis_title="Total Sold",
+        coloraxis_colorbar=dict(
+            title="Total Sold"
+        )
+    )
+    st.plotly_chart(fig)
+
+with col3:
+    df = pd.DataFrame(by_p_region, columns=['Total Sold', 'Region'])
+    fig = px.bar(df,  x='Region', y='Total Sold', 
+             color='Total Sold', 
+             orientation='h',
+             title='Total Products Sold by Person and Region')
+
+    fig.update_layout(
+        xaxis_title="Total Sold",
+        yaxis_title="Product",
+        coloraxis_colorbar=dict(
+            title="Region"
+        )
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
 
 

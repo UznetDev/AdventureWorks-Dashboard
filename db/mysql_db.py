@@ -120,3 +120,95 @@ class Database:
             self.reconnect()
         except Exception as err:
             logging.error(err)
+
+    def get_sales_by_category(self, option):
+        try:
+            sql = f"""
+                SELECT pc.Name AS CategoryName, SUM({option}) AS TotalSold
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader as soh
+                USING(SalesOrderID)
+                JOIN Production_Product p 
+                USING(ProductID)
+                JOIN Production_ProductSubcategory psc
+                USING(ProductSubcategoryID)
+                JOIN Production_ProductCategory pc
+                USING(ProductCategoryID)
+                GROUP BY pc.Name
+                ORDER BY TotalSold DESC
+                """
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+
+    def get_sales_by_tretory(self, option):
+        try:
+            sql = f"""
+            SELECT st.Name AS Territory, SUM({option}) AS TotalSold
+            FROM Sales_SalesOrderDetail sod
+            JOIN Sales_SalesOrderHeader soh
+            USING(SalesOrderID)
+            JOIN Sales_SalesTerritory st
+            USING(TerritoryID)
+            GROUP BY st.Name
+            ORDER BY TotalSold DESC
+                """
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+
+
+    def get_sales_by_p_region(self, option):
+        try:
+            sql = f"""
+                SELECT cr.Name AS CountryRegion, SUM({option}) AS TotalSales
+                FROM Sales_SalesOrderHeader soh
+                JOIN Sales_SalesOrderDetail sod
+                USING(SalesOrderID)
+                JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
+                JOIN Person_Person pp ON c.PersonID = pp.BusinessEntityID
+                JOIN Person_BusinessEntityAddress bea ON pp.BusinessEntityID = bea.BusinessEntityID
+                JOIN Person_Address a ON bea.AddressID = a.AddressID
+                JOIN Person_StateProvince sp ON a.StateProvinceID = sp.StateProvinceID
+                JOIN Person_CountryRegion cr ON sp.CountryRegionCode = cr.CountryRegionCode
+                GROUP BY cr.Name
+                ORDER BY TotalSales
+                """
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+
+    def get_sales_by_p_month(self, option):
+        try:
+            sql = f"""
+                SELECT m.name AS month, SUM({option}) AS v
+                FROM Sales_SalesOrderHeader s
+                JOIN Sales_SalesOrderDetail sod 
+                USING(SalesOrderID)
+                JOIN month m 
+                ON MONTH(s.DueDate) = m.number
+                GROUP BY m.name, m.number
+                ORDER BY m.number
+                """
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
