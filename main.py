@@ -57,7 +57,7 @@ with col3:
 
 option = st.selectbox(
     'Tanlang: Total Sales (TotalDue) yoki Order Quantity (OrderQty)',
-    ('TotalDue', 'OrderQty')
+    ('TotalDue', 'OrderQty', 'NetProfit')
 )
 
 by_category = db.get_sales_by_category(option)
@@ -67,15 +67,14 @@ by_p_region = db.get_sales_by_p_region(option)
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    df = pd.DataFrame(by_category, columns=['Category', 'Total Sold'])
-    fig = px.pie(df, names='Category', values='Total Sold', title='Total Products Sold by Category')
+    df = pd.DataFrame(by_category, columns=['Category', option])
+    fig = px.pie(df, names='Category', values=option, title='Total Products Sold by Category')
 
     fig.update_traces(pull=[0.02, 0.1, 0.01, 0.105],
                   textinfo='percent+label',
                   marker=dict(line=dict(color='white', width=2)))
 
     fig.update_layout(
-        # title_font=dict(size=24, family='Arial, bold', color='red'),
         font=dict(size=16, color='#F39C12'),
         showlegend=True, 
         title_font_size=20,
@@ -108,8 +107,7 @@ with col2:
 with col3:
     df = pd.DataFrame(by_p_region, columns=['Region', 'Category', 'Total Sold'])
     fig = px.bar(df, x='Total Sold', y='Region', color='Category', 
-                title='Products Category', 
-    # title_font=dict(size=20, family='Arial, bold', color='red'),
+                title='Products Category',
                 labels={'Total Sold': 'Total Sold', 'Category': 'Product Category'},
                 orientation='h', 
                 text='Total Sold')
@@ -129,13 +127,14 @@ with col3:
 by_month = db.get_sales_by_c_month(option)
 by_day = db.get_sales_by_c_day(option)
 by_year = db.get_sales_by_c_year(option)
-online_sales_p = db.get_online_persentage()
+online_sales_p = db.get_online_persentage(option)
 
 col, col1, col2, col3 = st.columns(4)
 
 with col:
-    df = pd.DataFrame(online_sales_p, columns=['OnlineOrderFlag', 'TotalOrders'])
-    fig = px.pie(df, names='OnlineOrderFlag', values='TotalOrders', hole=0.4, 
+    st.write(online_sales_p)
+    df = pd.DataFrame(online_sales_p, columns=['Flag', option])
+    fig = px.pie(df, names='Flag', values=option, hole=0.4, 
                 title='Online vs Offline Orders')
     fig.update_traces(textinfo='percent+label',
                     pull=[0.1, 0],

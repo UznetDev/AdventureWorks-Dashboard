@@ -33,4 +33,12 @@ FROM `Sales_SalesOrderHeader` s
 JOIN month m
 ON MONTH(s.DueDate)=m.number
 GROUP BY month
-ORDER BY v
+ORDER BY v;
+
+
+ALTER TABLE Sales_SalesOrderDetail
+ADD NetProfit FLOAT;
+
+UPDATE Sales_SalesOrderDetail sod
+JOIN Production_Product p ON sod.ProductID = p.ProductID
+SET sod.NetProfit = sod.LineTotal - (sod.OrderQty * p.StandardCost);

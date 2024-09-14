@@ -291,7 +291,7 @@ class Database:
             logging.error(err)
 
 
-    def get_online_persentage(self):
+    def get_online_persentage(self, option):
         try:
             sql = f"""
                     SELECT 
@@ -299,7 +299,7 @@ class Database:
                             WHEN OnlineOrderFlag = 1 THEN 'Online'
                             ELSE 'Offline'
                         END AS OrderType,
-                        SUM(OrderQty) AS TotalOrders
+                        SUM({option}) AS TotalOrders
                     FROM Sales_SalesOrderDetail sod
                     JOIN Sales_SalesOrderHeader soh
                     ON sod.SalesOrderID = soh.SalesOrderID
