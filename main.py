@@ -58,7 +58,7 @@ with col3:
 
 option = st.selectbox(
     'Tanlang: Total Sales (TotalDue) yoki Order Quantity (OrderQty)',
-    ('TotalDue', 'OrderQty', 'NetProfit')
+    ('TotalDue', 'OrderQty', 'LineTotal', 'NetProfit')
 )
 
 by_category = db.get_sales_by_category(option)
@@ -128,10 +128,10 @@ with col3:
 
 
 
-by_month = db.get_sales_by_c_month(option)
-by_day = db.get_sales_by_c_day(option)
-by_year = db.get_sales_by_c_year(option)
-online_sales_p = db.get_online_persentage(option)
+by_month = db.get_sales_by_month(option=option)
+by_day = db.get_sales_by_day(option=option,)
+by_year = db.get_sales_by_year(option=option)
+online_sales_p = db.get_online_persentage(option=option)
 
 col, col1, col2, col3 = st.columns(4)
 
@@ -164,7 +164,7 @@ with col:
 with col1:
     df = pd.DataFrame(by_month, columns=['Month', 'Category', option])
             
-    df['data'] = normalize_data(df[option])
+    df['data'] = normalize_data(df, option, 1, 10, response=True)
 
     fig = px.line(df, x='Month', y=option, color='Category',
                           title='Product Category Sales by Month',
@@ -175,7 +175,7 @@ with col1:
 with col2:
     df = pd.DataFrame(by_day, columns=['Day', 'Category', option])
 
-    df['data'] = normalize_data(df[option])
+    df['data'] = normalize_data(df, option, 1, 10, response=True)
 
     fig = px.line(df, x='Day', y=option, color='Category',
                 title='Product Category Sales by Day',
@@ -309,18 +309,28 @@ with col2:
     st.plotly_chart(fig, use_container_width=True)
 
 
-col1, col2, col3 = st.columns(3)
+locations = db.get_locations()
+categories = db.get_categories()
+
+
+
+col1, col2, col3, col4 = st.columns(4)
+
+
+with col2:
+    chart_type = st.selectbox('Select Chart Type', ['Bar Chart', 'Line Chart'], key='chart_type')
+with col3:
+    selected_category = st.selectbox('Select Product Category', ['All'] + categories, key='category_selectbox')
+with col4:
+    selected_location = st.selectbox('Select Location', ['All'] + locations, key='location_sales_selectbox')
+
+sales_data_day = db.get_sales_by_day(option=option, location=selected_location, category=selected_category)
+
+
+
 
 with col1:
     metric_option = st.selectbox('Select Metric', ['Total Revenue', 'Number of Orders'], key='metric_selectbox')
-with col2:
-    selected_location = st.selectbox('Select Location', ['All'] + locations, key='location_selectbox')
-with col3:
-    selected_category = st.selectbox('Select Product Category', ['All'] + categories, key='category_selectbox')
-
-col1, col2, col3 = st.columns(3)
-with col1:
-
     if metric_option == 'Total Revenue':
         metric = 'TotalRevenue'
     else:
@@ -331,7 +341,6 @@ with col1:
         location=selected_location,
         category=selected_category
     )
-
     if shipmethod_data:
         if metric == 'TotalRevenue':
             df = pd.DataFrame(shipmethod_data, columns=['ShipMethod', 'TotalRevenue'])
@@ -352,6 +361,135 @@ with col1:
         st.plotly_chart(fig)
     else:
         st.warning('No data available to display the Ship Method distribution.')
+
+with col2:
+
+    if selected_category == 'All':
+        sales_data_day = db.get_sales_by_day_with_category(location=selected_location)
+        if sales_data_day:
+            df_day = pd.DataFrame(sales_data_day, columns=['Day', 'Category', 'TotalSales'])
+            df_day['Day'] = df_day['Day'].astype(str)
+
+            df_day = normalize_data(df_day, 'TotalSales', 1, 10)
+
+            if chart_type == 'Bar Chart':
+                fig_day = px.bar(df_day, x='Day', y='NormalizedSales', color='Category',
+                                title='Total Sales by Day (with Categories)', barmode='stack',
+                                hover_data={'TotalSales': True, 'NormalizedSales': False})
+            else:
+                fig_day = px.line(df_day, x='Day', y='NormalizedSales', color='Category',
+                                title='Total Sales by Day (with Categories)',
+                                hover_data={'TotalSales': True, 'NormalizedSales': False})
+
+            st.plotly_chart(fig_day)
+        else:
+            st.warning('No daily sales data available.')
+    else:
+        if sales_data_day:
+            df_day = pd.DataFrame(sales_data_day, columns=['Day', 'TotalSales'])
+            df_day['Day'] = df_day['Day'].astype(str)
+
+            df_day = normalize_data(df_day, 'TotalSales', 1, 10)
+
+            if chart_type == 'Bar Chart':
+                fig_day = px.bar(df_day, x='Day', y='NormalizedSales',
+                                title=f'Total Sales by Day for {selected_category}',
+                                hover_data={'TotalSales': True, 'NormalizedSales': False})
+            else:
+                fig_day = px.line(df_day, x='Day', y='NormalizedSales',
+                                title=f'Total Sales by Day for {selected_category}',
+                                hover_data={'TotalSales': True, 'NormalizedSales': False})
+
+            st.plotly_chart(fig_day)
+        else:
+            st.warning('No daily sales data available.')
+
+
+
+with col3:
+    if selected_category == 'All':
+        sales_data_month = db.get_sales_by_month_with_category(location=selected_location)
+        if sales_data_month:
+            df_month = pd.DataFrame(sales_data_month, columns=['Month', 'Category', 'TotalSales'])
+            df_month['Month'] = df_month['Month'].astype(str)
+
+            df_month = normalize_data(df_month, 'TotalSales', 1, 10)
+
+            if chart_type == 'Bar Chart':
+                fig_month = px.bar(df_month, x='Month', y='NormalizedSales', color='Category',
+                                title='Total Sales by Month (with Categories)', barmode='stack',
+                                hover_data={'TotalSales': True, 'NormalizedSales': False})
+            else:
+                fig_month = px.line(df_month, x='Month', y='NormalizedSales', color='Category',
+                                    title='Total Sales by Month (with Categories)',
+                                    hover_data={'TotalSales': True, 'NormalizedSales': False})
+
+            st.plotly_chart(fig_month)
+        else:
+            st.warning('No monthly sales data available.')
+    else:
+        sales_data_month = db.get_sales_by_month(option=option,location=selected_location, category=selected_category)
+        if sales_data_month:
+            df_month = pd.DataFrame(sales_data_month, columns=['Month', 'TotalSales'])
+            df_month['Month'] = df_month['Month'].astype(str)
+
+            df_month = normalize_data(df_month, 'TotalSales', 1, 10)
+
+            if chart_type == 'Bar Chart':
+                fig_month = px.bar(df_month, x='Month', y='NormalizedSales',
+                                title=f'Total Sales by Month for {selected_category}',
+                                hover_data={'TotalSales': True, 'NormalizedSales': False})
+            else:
+                fig_month = px.line(df_month, x='Month', y='NormalizedSales',
+                                    title=f'Total Sales by Month for {selected_category}',
+                                    hover_data={'TotalSales': True, 'NormalizedSales': False})
+
+            st.plotly_chart(fig_month)
+        else:
+            st.warning('No monthly sales data available.')
+
+with col4:
+    if selected_category == 'All':
+        sales_data_year = db.get_sales_by_year_with_category(location=selected_location)
+        if sales_data_year:
+            df_year = pd.DataFrame(sales_data_year, columns=['Year', 'Category', 'TotalSales'])
+            df_year['Year'] = df_year['Year'].astype(str)
+
+            df_year = normalize_data(df_year, 'TotalSales', 1, 10)
+
+            if chart_type == 'Bar Chart':
+                fig_year = px.bar(df_year, x='Year', y='NormalizedSales', color='Category',
+                                title='Total Sales by Year (with Categories)', barmode='stack',
+                                hover_data={'TotalSales': True, 'NormalizedSales': False})
+            else:
+                fig_year = px.line(df_year, x='Year', y='NormalizedSales', color='Category',
+                                title='Total Sales by Year (with Categories)',
+                                hover_data={'TotalSales': True, 'NormalizedSales': False})
+
+            st.plotly_chart(fig_year)
+        else:
+            st.warning('No yearly sales data available.')
+    else:
+        sales_data_year = db.get_sales_by_year(option=option, location=selected_location, category=selected_category)
+        if sales_data_year:
+            df_year = pd.DataFrame(sales_data_year, columns=['Year', 'TotalSales'])
+            df_year['Year'] = df_year['Year'].astype(str)
+
+            df_year = normalize_data(df_year, 'TotalSales', 1, 10)
+
+            if chart_type == 'Bar Chart':
+                fig_year = px.bar(df_year, x='Year', y='NormalizedSales',
+                                title=f'Total Sales by Year for {selected_category}',
+                                hover_data={'TotalSales': True, 'NormalizedSales': False})
+            else:
+                fig_year = px.line(df_year, x='Year', y='NormalizedSales',
+                                title=f'Total Sales by Year for {selected_category}',
+                                hover_data={'TotalSales': True, 'NormalizedSales': False})
+
+            st.plotly_chart(fig_year)
+        else:
+            st.warning('No yearly sales data available.')
+
 
 
 

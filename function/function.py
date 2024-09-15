@@ -22,9 +22,24 @@ def abbreviate_number(num):
         return num
     
 
-def normalize_data(series):
-    r = 2 * (series - series.min()) / (series.max() - series.min()) - 1
-    return r
+def normalize_data(df, value_column, start=-1, end=1, new_column=None, response=False):
+    min_value = df[value_column].min()
+    max_value = df[value_column].max()
+
+    if new_column is None:
+        new_column = 'NormalizedSales'
+        
+    if max_value != min_value:
+        if response:
+            return start + (df[value_column] - min_value) / (max_value - min_value) * (end - start)
+        df[new_column] = start + (df[value_column] - min_value) / (max_value - min_value) * (end - start)
+    else:
+        if response:
+            return start
+        df[new_column] = start
+    
+    return df
+
 
 
 def make_donut(input_response, input_text, input_color=None):

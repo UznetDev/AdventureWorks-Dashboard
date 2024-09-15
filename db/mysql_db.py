@@ -57,8 +57,8 @@ class Database:
             self.reconnect()
         except Exception as err:
             logging.error(err)
-    
-    
+
+
     def insert_table_sales_per_day(self):
         try:
             sql = """SELECT * FROM `sales_per_day`"""
@@ -170,7 +170,6 @@ class Database:
             logging.error(err)
 
 
-
     def get_sales_by_p_region(self, option):
         try:
             sql = f"""
@@ -212,76 +211,6 @@ class Database:
                 GROUP BY m.name, m.number
                 ORDER BY m.number
                 """
-            self.cursor.execute(sql)
-            return self.cursor.fetchall()
-        except mysql.connector.Error as err:
-            logging.error(err)
-            self.reconnect()
-        except Exception as err:
-            logging.error(err)
-
-
-    def get_sales_by_c_month(self, option):
-        try:
-            sql = f"""
-                SELECT m.name AS month, 
-                       pc.Name AS product_category, 
-                       SUM({option}) AS category_sales
-                FROM Sales_SalesOrderHeader s
-                JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
-                JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                JOIN month m ON MONTH(s.DueDate) = m.number
-                GROUP BY m.name, m.number, pc.Name
-                ORDER BY m.number
-                """
-            self.cursor.execute(sql)
-            return self.cursor.fetchall()
-        except mysql.connector.Error as err:
-            logging.error(err)
-            self.reconnect()
-        except Exception as err:
-            logging.error(err)
-
-
-    def get_sales_by_c_day(self, option):
-        try:
-            sql = f"""
-                SELECT DAY(DueDate) AS day, 
-                    pc.Name AS product_category, 
-                    SUM({option}) AS category_sales
-                FROM Sales_SalesOrderHeader s
-                JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
-                JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                GROUP BY day, pc.Name
-                ORDER BY day
-                """
-            self.cursor.execute(sql)
-            return self.cursor.fetchall()
-        except mysql.connector.Error as err:
-            logging.error(err)
-            self.reconnect()
-        except Exception as err:
-            logging.error(err)
-
-
-    def get_sales_by_c_year(self, option):
-        try:
-            sql = f"""
-                SELECT YEAR(soh.OrderDate) AS Year, 
-                    pc.Name AS ProductCategory, 
-                    SUM({option}) AS TotalSold
-                FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
-                JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                GROUP BY Year, pc.Name
-                ORDER BY Year, TotalSold DESC
-            """
             self.cursor.execute(sql)
             return self.cursor.fetchall()
         except mysql.connector.Error as err:
@@ -347,7 +276,6 @@ class Database:
             return []
 
 
-
     def get_online_persentage(self, option):
         try:
             if option == 'NetProfit':
@@ -385,8 +313,8 @@ class Database:
         except Exception as err:
             logging.error(err)
             return []
-        
-    
+
+
     def get_locations(self):
         """
         Retrieve a list of available locations.
@@ -466,7 +394,6 @@ class Database:
             logging.error(err)
             return None
         
-
     def get_shipmethod_distribution(self, metric='TotalRevenue', location=None, category=None):
         """
         Retrieves the distribution of the specified metric by ShipMethod,
@@ -481,6 +408,7 @@ class Database:
         - List of tuples containing ShipMethod names and aggregated values.
         """
         try:
+            # Initialize the base SQL query depending on the metric
             if metric == 'TotalRevenue':
                 sql = """
                 SELECT sm.Name AS ShipMethod, SUM(sod.LineTotal) AS TotalRevenue
@@ -492,6 +420,7 @@ class Database:
                 LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                 LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
                 """
+                order_by_column = "TotalRevenue"
             elif metric == 'OrderCount':
                 sql = """
                 SELECT sm.Name AS ShipMethod, COUNT(*) AS OrderCount
@@ -503,8 +432,8 @@ class Database:
                 LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                 LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
                 """
+                order_by_column = "OrderCount"
             else:
-                # Default to TotalRevenue if metric is unrecognized
                 sql = """
                 SELECT sm.Name AS ShipMethod, SUM(sod.LineTotal) AS TotalRevenue
                 FROM Sales_SalesOrderDetail sod
@@ -515,7 +444,9 @@ class Database:
                 LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                 LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
                 """
+                order_by_column = "TotalRevenue"
 
+            # Handle optional filters
             conditions = []
             params = []
 
@@ -527,11 +458,14 @@ class Database:
                 conditions.append("pc.Name = %s")
                 params.append(category)
 
+            # Append conditions to SQL query
             if conditions:
                 sql += " WHERE " + " AND ".join(conditions)
 
-            sql += " GROUP BY sm.Name ORDER BY {} DESC;".format(metric)
+            # Group by and order by dynamically based on the metric
+            sql += f" GROUP BY sm.Name ORDER BY {order_by_column} DESC;"
 
+            # Execute query
             self.cursor.execute(sql, params)
             result = self.cursor.fetchall()
             return result
@@ -544,3 +478,302 @@ class Database:
             return []
 
 
+
+
+    def get_sales_by_day(self, option, location=None, category=None):
+        try:
+            if location is None and category is None:
+                sql = f"""
+                    SELECT DAY(DueDate) AS day, 
+                        pc.Name AS product_category, 
+                        SUM({option}) AS category_sales
+                    FROM Sales_SalesOrderHeader s
+                    JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
+                    JOIN Production_Product p ON sod.ProductID = p.ProductID
+                    JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                    JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                    GROUP BY day, pc.Name
+                    ORDER BY day
+
+                    """
+                self.cursor.execute(sql)
+                return self.cursor.fetchall()
+            else:
+                sql = f"""
+                    SELECT DAY(soh.OrderDate) AS Day, 
+                    SUM({option}) AS TotalSales
+                    FROM Sales_SalesOrderDetail sod
+                    JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                    JOIN Production_Product p ON sod.ProductID = p.ProductID
+                    LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                    LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                    LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                    """
+                conditions = []
+                params = []
+
+                if location and location != 'All':
+                    conditions.append("st.Name = %s")
+                    params.append(location)
+
+                if category and category != 'All':
+                    conditions.append("pc.Name = %s")
+                    params.append(category)
+
+                if conditions:
+                    sql += " WHERE " + " AND ".join(conditions)
+
+                sql += " GROUP BY DAY(soh.OrderDate) ORDER BY Day"
+
+                self.cursor.execute(sql, params)
+                return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+
+
+    def get_sales_by_month(self, option, location=None, category=None):
+        try:
+            if location is None and category is None:
+                try:
+                    sql = f"""
+                            SELECT m.name AS month, 
+                                pc.Name AS product_category, 
+                                SUM({option}) AS category_sales
+                            FROM Sales_SalesOrderHeader s
+                            JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
+                            JOIN Production_Product p ON sod.ProductID = p.ProductID
+                            JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                            JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                            JOIN month m ON MONTH(s.DueDate) = m.number
+                            GROUP BY m.name, m.number, pc.Name
+                            ORDER BY m.number
+                        """
+                    self.cursor.execute(sql)
+                    return self.cursor.fetchall()
+                except mysql.connector.Error as err:
+                    logging.error(err)
+                    self.reconnect()
+                except Exception as err:
+                    logging.error(err)
+            else:
+                try:
+                    sql = f"""
+                        SELECT m.name AS month, 
+                        SUM({option}) AS TotalSales
+                        FROM Sales_SalesOrderDetail sod
+                        JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                        JOIN Production_Product p ON sod.ProductID = p.ProductID
+                        LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                        LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                        LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                        JOIN month m
+                        ON MONTH(soh.DueDate) = m.number
+                        """
+                    conditions = []
+                    params = []
+
+                    if location and location != 'All':
+                        conditions.append("st.Name = %s")
+                        params.append(location)
+
+                    if category and category != 'All':
+                        conditions.append("pc.Name = %s")
+                        params.append(category)
+
+                    if conditions:
+                        sql += " WHERE " + " AND ".join(conditions)
+
+                    sql += " GROUP BY month"
+
+                    self.cursor.execute(sql, params)
+                    result = self.cursor.fetchall()
+                    return result
+                except mysql.connector.Error as err:
+                    logging.error(err)
+                    self.reconnect()
+                except Exception as err:
+                    logging.error(err)
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+
+    def get_sales_by_year(self, option, location=None, category=None):
+        try:
+            if location is None and category is None:
+                sql = f"""
+                    SELECT
+                        YEAR(s.DueDate) AS year,
+                        pc.Name AS product_category, 
+                        SUM({option}) AS category_sales
+                    FROM Sales_SalesOrderHeader s
+                    JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
+                    JOIN Production_Product p ON sod.ProductID = p.ProductID
+                    JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                    JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                    GROUP BY year, product_category
+                    ORDER BY year
+                """
+                self.cursor.execute(sql)
+                return self.cursor.fetchall()
+            else:
+                sql = f"""
+                    SELECT YEAR(soh.OrderDate) AS Year, 
+                    SUM({option}) AS TotalSales
+                    FROM Sales_SalesOrderDetail sod
+                    JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                    JOIN Production_Product p ON sod.ProductID = p.ProductID
+                    LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                    LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                    LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                    """
+                conditions = []
+                params = []
+
+                if location and location != 'All':
+                    conditions.append("st.Name = %s")
+                    params.append(location)
+
+                if category and category != 'All':
+                    conditions.append("pc.Name = %s")
+                    params.append(category)
+
+                if conditions:
+                    sql += " WHERE " + " AND ".join(conditions)
+
+                sql += " GROUP BY YEAR(soh.OrderDate) ORDER BY Year"
+
+                self.cursor.execute(sql, params)
+                result = self.cursor.fetchall()
+                return result
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+        except Exception as err:
+            logging.error(err)
+
+
+
+    def get_sales_by_day_with_category(self, location=None):
+        """
+        Retrieves the sales data by day of the month, broken down by category.
+        Optionally filtered by location.
+        """
+        try:
+            sql = """
+            SELECT DAY(soh.OrderDate) AS Day, pc.Name AS Category, SUM(sod.LineTotal) AS TotalSales
+            FROM Sales_SalesOrderDetail sod
+            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+            JOIN Production_Product p ON sod.ProductID = p.ProductID
+            LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+            LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+            """
+            conditions = []
+            params = []
+
+            if location and location != 'All':
+                conditions.append("st.Name = %s")
+                params.append(location)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY DAY(soh.OrderDate), pc.Name ORDER BY Day"
+
+            self.cursor.execute(sql, params)
+            result = self.cursor.fetchall()
+            return result
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+            return []
+        except Exception as err:
+            logging.error(err)
+            return []
+
+    def get_sales_by_month_with_category(self, location=None):
+        try:
+            sql = """
+            SELECT m.name AS month, 
+            pc.Name AS Category, 
+            SUM(sod.LineTotal) AS TotalSales
+            FROM Sales_SalesOrderDetail sod
+            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+            JOIN Production_Product p ON sod.ProductID = p.ProductID
+            LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+            LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+            JOIN month m
+            ON MONTH(soh.DueDate) = m.number
+            """
+            conditions = []
+            params = []
+
+            if location and location != 'All':
+                conditions.append("st.Name = %s")
+                params.append(location)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += """ GROUP BY month, pc.Name ORDER BY (
+            SELECT number 
+            FROM month AS m2
+            WHERE m2.name=month
+            )"""
+
+            self.cursor.execute(sql, params)
+            result = self.cursor.fetchall()
+            return result
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+            return []
+        except Exception as err:
+            logging.error(err)
+            return []
+
+    def get_sales_by_year_with_category(self, location=None):
+        """
+        Retrieves the sales data by year, broken down by category.
+        Optionally filtered by location.
+        """
+        try:
+            sql = """
+            SELECT YEAR(soh.OrderDate) AS Year, pc.Name AS Category, SUM(sod.LineTotal) AS TotalSales
+            FROM Sales_SalesOrderDetail sod
+            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+            JOIN Production_Product p ON sod.ProductID = p.ProductID
+            LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+            LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+            """
+            conditions = []
+            params = []
+
+            if location and location != 'All':
+                conditions.append("st.Name = %s")
+                params.append(location)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY YEAR(soh.OrderDate), pc.Name ORDER BY Year"
+
+            self.cursor.execute(sql, params)
+            result = self.cursor.fetchall()
+            return result
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+            return []
+        except Exception as err:
+            logging.error(err)
+            return []
