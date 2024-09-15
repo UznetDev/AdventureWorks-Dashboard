@@ -4,6 +4,8 @@ import plotly.express as px
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 from loader import *
 from function.function import *
 
@@ -132,50 +134,29 @@ online_sales_p = db.get_online_persentage(option)
 col, col1, col2, col3 = st.columns(4)
 
 with col:
-    df = pd.DataFrame(online_sales_p, columns=['Flag', option])
-    fig = px.pie(df, 
-                 names='Flag', 
-                 values=option, 
-                 hole=0.4, 
-                title='Online vs Offline Orders')
-    fig.update_traces(textinfo='percent+label',
-                    pull=[0.1, 0],
-                    marker=dict(line=dict(color='white', width=5)))
+    df1 = pd.DataFrame(online_sales_p, columns=['Flag', option])
+
+    data2 = db.get_sales_by_reason_type(option)
+    df2 = pd.DataFrame(data2, columns=['ReasonType', option])
+
+    fig = make_subplots(rows=2, cols=1, specs=[[{'type':'domain'}], [{'type':'domain'}]])
+
+    fig.add_trace(
+        go.Pie(labels=df1['Flag'], values=df1[option], name='Online vs Offline', hole=0.5),
+        row=1, col=1
+    )
+    fig.add_trace(
+        go.Pie(labels=df2['ReasonType'], values=df2[option], name='ReasonType', hole=0.5),
+        row=2, col=1
+        
+    )
 
     fig.update_layout(
-    font=dict(size=16, color='#F39C12'),
-    showlegend=True,
-    legend=dict(
-        font=dict(size=16),
-        title_font_family="Arial"
-        )
+        title_text="Online vs Offline Orders va ReasonType bo'yicha sotuv",
+        annotations=[dict(text='Online vs Offline', x=0.5, y=1.15, font_size=14, showarrow=False, xref='paper', yref='paper'),
+                    dict(text='ReasonType', x=0.5, y=0.5, font_size=14, showarrow=False, xref='paper', yref='paper')]
     )
-    st.plotly_chart(fig)
 
-
-
-    data = db.get_sales_by_reason_type(option)
-    df = pd.DataFrame(data, columns=['ReasonType', option])
-
-    fig = px.pie(
-        df, 
-        values=option, 
-        names='ReasonType', 
-        title='ReasonType bo‘yicha umumiy sotuv', 
-        hole=0.4
-    )
-    fig.update_traces(textinfo='percent+label',
-                    pull=[0.1, 0],
-                    marker=dict(line=dict(color='white', width=5)))
-
-    fig.update_layout(
-    font=dict(size=10, color='#F39C12'),
-    showlegend=True,
-    legend=dict(
-        font=dict(size=16),
-        title_font_family="Arial"
-        )
-    )
     st.plotly_chart(fig)
 
 with col1:
