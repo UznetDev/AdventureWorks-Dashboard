@@ -810,3 +810,63 @@ class Database:
         except Exception as err:
             logging.error(err)
             return []
+
+
+
+    def fetch_sales_data(self):
+        """
+        Executes the SQL query to fetch all sales-related data.
+        """
+        query = """
+        SELECT
+            soh.SalesOrderID,
+            soh.OrderDate,
+            soh.DueDate,
+            soh.ShipDate,
+            soh.Status,
+            soh.OnlineOrderFlag,
+            soh.SalesOrderNumber,
+            soh.PurchaseOrderNumber,
+            soh.SubTotal,
+            soh.TaxAmt,
+            soh.Freight,
+            soh.TotalDue,
+            soh.Comment,
+            sod.ProductID,
+            sod.OrderQty,
+            sod.UnitPrice,
+            sod.LineTotal,
+            sod.UnitPriceDiscount,
+            p.Name AS ProductName,
+            p.ProductNumber,
+            p.Color,
+            p.StandardCost,
+            p.ListPrice,
+            psc.Name AS SubcategoryName,
+            pc.Name AS CategoryName,
+            st.Name AS TerritoryName,
+            sm.Name AS ShipMethodName,
+            c.CustomerID,
+            c.AccountNumber,
+            pa.AddressLine1,
+            pa.City,
+            pa.StateProvinceID,
+            pa.PostalCode
+        FROM Sales_SalesOrderHeader soh
+        JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+        JOIN Production_Product p ON sod.ProductID = p.ProductID
+        LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+        LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+        LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+        LEFT JOIN Purchasing_ShipMethod sm ON soh.ShipMethodID = sm.ShipMethodID
+        LEFT JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
+        LEFT JOIN Person_Address pa ON c.PersonID = pa.AddressID;
+        """
+        
+        try:
+            self.cursor.execute(query)
+            result = self.cursor.fetchall()
+            return result
+        except mysql.connector.Error as err:
+            logging.error(f"MySQL error: {err}")
+            return []
