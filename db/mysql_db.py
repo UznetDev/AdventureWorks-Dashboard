@@ -291,61 +291,14 @@ class Database:
             logging.error(err)
 
 
-    def get_online_persentage(self, option):
-        try:
-            sql = f"""
-                    SELECT 
-                        CASE 
-                            WHEN OnlineOrderFlag = 1 THEN 'Online'
-                            ELSE 'Offline'
-                        END AS OrderType,
-                        SUM({option}) AS TotalOrders
-                    FROM Sales_SalesOrderDetail sod
-                    JOIN Sales_SalesOrderHeader soh
-                    ON sod.SalesOrderID = soh.SalesOrderID
-                    GROUP BY OrderType;
-                    """
-            self.cursor.execute(sql)
-            return self.cursor.fetchall()
-        except mysql.connector.Error as err:
-            logging.error(err)
-            self.reconnect()
-        except Exception as err:
-            logging.error(err)
-
-
-    def get_map(self, option):
-        try:
-            sql = f"""
-                SELECT
-                    pat.City AS city,
-                    ST_X(SpatialLocation) AS Longitude, 
-                    ST_Y(SpatialLocation) AS Latitude,
-                    SUM({option}) AS value
-                FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                JOIN Person_BusinessEntityAddress pbea ON pbea.BusinessEntityID = soh.SalesPersonID
-                JOIN Person_Address pat ON pat.AddressID = pbea.AddressID
-                GROUP BY city, Longitude, Latitude
-            """
-            self.cursor.execute(sql)
-            return self.cursor.fetchall()
-        except mysql.connector.Error as err:
-            logging.error(err)
-            self.reconnect()
-        except Exception as err:
-            logging.error(err)
-
-
     def get_sales_by_reason_type(self, option):
         try:
             sql = f"""
                 SELECT
                     sr.ReasonType,
-                    SUM({option}) AS TotalSales
+                    SUM(soh.TotalDue) AS {option}
                 FROM
-                    Sales_SalesOrderDetail sod
-                    JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                    Sales_SalesOrderHeader soh
                     INNER JOIN Sales_SalesOrderHeaderSalesReason sohsr ON soh.SalesOrderID = sohsr.SalesOrderID
                     INNER JOIN Sales_SalesReason sr ON sohsr.SalesReasonID = sr.SalesReasonID
                 GROUP BY
@@ -360,3 +313,76 @@ class Database:
         except Exception as err:
             logging.error(err)
             return []
+
+
+    def get_map(self, option):
+        try:
+            if option == 'TotalDue':
+                value_column = 'soh.TotalDue'
+            elif option in ['OrderQty', 'NetProfit']:
+                value_column = f'sod.{option}'
+            else:
+                value_column = '0'
+
+            sql = f"""
+                SELECT
+                    pat.City AS city,
+                    ST_X(pat.SpatialLocation) AS Longitude, 
+                    ST_Y(pat.SpatialLocation) AS Latitude,
+                    SUM({value_column}) AS value
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                JOIN Person_BusinessEntityAddress pbea ON pbea.BusinessEntityID = soh.SalesPersonID
+                JOIN Person_Address pat ON pat.AddressID = pbea.AddressID
+                GROUP BY city, Longitude, Latitude
+            """
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+            return []
+        except Exception as err:
+            logging.error(err)
+            return []
+
+
+
+    def get_online_persentage(self, option):
+        try:
+            if option == 'NetProfit':
+                value_column = 'sod.NetProfit'
+                where_clause = f'WHERE sod.NetProfit > 0'
+            elif option == 'TotalDue':
+                value_column = 'soh.TotalDue'
+                where_clause = ''
+            elif option == 'OrderQty':
+                value_column = 'sod.OrderQty'
+                where_clause = ''
+            else:
+                value_column = '0'
+                where_clause = ''
+            
+            sql = f"""
+                SELECT 
+                    CASE 
+                        WHEN soh.OnlineOrderFlag = 1 THEN 'Online'
+                        ELSE 'Offline'
+                    END AS Flag,
+                    SUM({value_column}) AS TotalValue
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader soh
+                ON sod.SalesOrderID = soh.SalesOrderID
+                {where_clause}
+                GROUP BY Flag;
+            """
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+            return []
+        except Exception as err:
+            logging.error(err)
+            return []
+

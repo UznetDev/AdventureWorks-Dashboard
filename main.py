@@ -152,7 +152,7 @@ with col:
     )
 
     fig.update_layout(
-        title_text="Online vs Offline Orders va ReasonType bo'yicha sotuv",
+        title_text="Online vs Offline Orders and ReasonType",
         annotations=[dict(text='Online vs Offline', x=0.5, y=1.15, font_size=14, showarrow=False, xref='paper', yref='paper'),
                     dict(text='ReasonType', x=0.5, y=0.5, font_size=14, showarrow=False, xref='paper', yref='paper')]
     )
@@ -203,39 +203,67 @@ with col3:
     )
     st.plotly_chart(fig)
 
+col, col1, col2, col3 = st.columns(4)
 
-data = db.get_map(option)
-df = pd.DataFrame(data, columns=['city', 'Longitude', 'Latitude', option])
-df[option] = pd.to_numeric(df[option], errors='coerce')
 
-fig = px.scatter_mapbox(df,
-                        lat="Latitude", 
-                        lon="Longitude",
-                        hover_data={'city': True, option: True},
-                        size=option, 
-                        color=option, 
-                        size_max=40,
-                        color_discrete_sequence=["fuchsia"],
-                        zoom=3, 
-                        height=300)
+with col:
+    data = db.get_map(option)
+    if not data:
+        st.error("Ma'lumotlarni olishda xatolik yuz berdi yoki ma'lumotlar mavjud emas.")
+        st.stop()
 
-fig.update_layout(
-    mapbox_style="white-bg",
-    mapbox_layers=[
-        {
-            "below": 'traces',
-            "sourcetype": "raster",
-            "sourceattribution": "United States Geological Survey",
-            "source": [
-                "https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x}"
-            ]
-        }
-    ]
-)
+    df = pd.DataFrame(data, columns=['city', 'Longitude', 'Latitude', 'value'])
+    df['value'] = pd.to_numeric(df['value'], errors='coerce')
 
-fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    # NaN qiymatlarni va manfiy qiymatlarni olib tashlash
+    df = df.dropna(subset=['Longitude', 'Latitude', 'value'])
 
-st.plotly_chart(fig, use_container_width=True)
+    # Manfiy qiymatlar bilan ishlash
+    if option == 'NetProfit':
+        # Manfiy va musbat qiymatlarni ajratamiz
+        df['ProfitType'] = df['value'].apply(lambda x: 'Profit' if x > 0 else 'Loss')
+        df['abs_value'] = df['value'].abs()  # Marker o'lchami uchun absolyut qiymatni olamiz
+
+        # Agar data bo'sh bo'lib qolsa, xabar berish
+        if df.empty:
+            st.warning("Tanlangan parametr bo'yicha ma'lumotlar topilmadi.")
+            st.stop()
+
+        # Xarita yaratish
+        fig = px.scatter_mapbox(df,
+                                lat="Latitude", 
+                                lon="Longitude",
+                                hover_name='city',
+                                hover_data={'value': True, 'ProfitType': True},
+                                size='abs_value', 
+                                color='ProfitType', 
+                                size_max=40,
+                                zoom=3, 
+                                height=600)
+    else:
+        # Faqat musbat qiymatlarni qoldiramiz
+        df = df[df['value'] > 0]
+
+        if df.empty:
+            st.warning("Tanlangan parametr bo'yicha ma'lumotlar topilmadi.")
+            st.stop()
+
+        fig = px.scatter_mapbox(df,
+                                lat="Latitude", 
+                                lon="Longitude",
+                                hover_name='city',
+                                hover_data={'value': True},
+                                size='value', 
+                                color='value', 
+                                color_continuous_scale=px.colors.cyclical.IceFire,
+                                size_max=40,
+                                zoom=3, 
+                                height=600)
+
+    fig.update_layout(mapbox_style="open-street-map")
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+    st.plotly_chart(fig, use_container_width=True)
 
 
 
