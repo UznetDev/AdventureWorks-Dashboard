@@ -3,7 +3,6 @@ import sys
 import plotly.express as px
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 from loader import *
@@ -70,7 +69,10 @@ by_p_region = db.get_sales_by_p_region(option)
 col1, col2, col3 = st.columns(3)
 with col1:
     df = pd.DataFrame(by_category, columns=['Category', option])
-    fig = px.pie(df, names='Category', values=option, title='Total Products Sold by Category')
+    fig = px.pie(df, 
+                names='Category', 
+                values=option, 
+                title='Total Products Sold by Category')
 
     fig.update_traces(pull=[0.02, 0.1, 0.01, 0.105],
                   textinfo='percent+label',
@@ -207,60 +209,6 @@ col1, col2 = st.columns(2)
 
 
 with col1:
-    data = db.get_map(option)
-    if not data:
-        st.error("Ma'lumotlarni olishda xatolik yuz berdi yoki ma'lumotlar mavjud emas.")
-        st.stop()
-
-    df = pd.DataFrame(data, columns=['city', 'Longitude', 'Latitude', 'value'])
-    df['value'] = pd.to_numeric(df['value'], errors='coerce')
-
-    df = df.dropna(subset=['Longitude', 'Latitude', 'value'])
-
-    if option == 'NetProfit':
-        df['ProfitType'] = df['value'].apply(lambda x: 'Profit' if x > 0 else 'Loss')
-        df['abs_value'] = df['value'].abs()
-
-        if df.empty:
-            st.warning("Tanlangan parametr bo'yicha ma'lumotlar topilmadi.")
-            st.stop()
-
-        fig = px.scatter_mapbox(df,
-                                lat="Latitude", 
-                                lon="Longitude",
-                                hover_name='city',
-                                hover_data={'value': True, 'ProfitType': True},
-                                size='abs_value', 
-                                color='ProfitType', 
-                                size_max=40,
-                                zoom=3, 
-                                height=600)
-    else:
-        df = df[df['value'] > 0]
-
-        if df.empty:
-            st.warning("Tanlangan parametr bo'yicha ma'lumotlar topilmadi.")
-            st.stop()
-
-        fig = px.scatter_mapbox(df,
-                                lat="Latitude", 
-                                lon="Longitude",
-                                hover_name='city',
-                                hover_data={'value': True},
-                                size='value', 
-                                color='value', 
-                                color_continuous_scale=px.colors.cyclical.IceFire,
-                                size_max=40,
-                                zoom=3, 
-                                height=400)
-
-    fig.update_layout(mapbox_style="open-street-map")
-    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
-
-    st.plotly_chart(fig, use_container_width=True)
-
-
-with col2:
     locations = db.get_locations()
     categories = db.get_categories()
 
@@ -296,12 +244,69 @@ with col2:
                     'Values': values
                 })
 
-                fig = px.pie(df, names='Labels', values='Values', title='Financial Breakdown Using Net Profit', hole=0.4)
-                fig.update_traces(textinfo='percent+label')
-
+                fig = px.pie(df,
+                            names='Labels', 
+                            values='Values', 
+                            title='Financial Breakdown', hole=0.4)
+                fig.update_traces(pull=[0.04, 0.06, 0.08, 0.1],
+                            textinfo='percent+label',
+                            marker=dict(line=dict(color='white', width=2)))
                 st.plotly_chart(fig)
     else:
         st.error('An error occurred while retrieving data.')
+
+with col2:
+    data = db.get_map(option)
+    if not data:
+        st.error('An error occurred while retrieving data.')
+        st.stop()
+
+    df = pd.DataFrame(data, columns=['city', 'Longitude', 'Latitude', 'value'])
+    df['value'] = pd.to_numeric(df['value'], errors='coerce')
+
+    df = df.dropna(subset=['Longitude', 'Latitude', 'value'])
+
+    if option == 'NetProfit':
+        df['ProfitType'] = df['value'].apply(lambda x: 'Profit' if x > 0 else 'Loss')
+        df['abs_value'] = df['value'].abs()
+
+        if df.empty:
+            st.warning('No financial data available for the selected parameters.')
+            st.stop()
+
+        fig = px.scatter_mapbox(df,
+                                lat="Latitude", 
+                                lon="Longitude",
+                                hover_name='city',
+                                hover_data={'value': True, 'ProfitType': True},
+                                size='abs_value', 
+                                color='ProfitType', 
+                                size_max=40,
+                                zoom=3, 
+                                height=550)
+    else:
+        df = df[df['value'] > 0]
+
+        if df.empty:
+            st.warning('No financial data available for the selected parameters.')
+            st.stop()
+
+        fig = px.scatter_mapbox(df,
+                                lat="Latitude", 
+                                lon="Longitude",
+                                hover_name='city',
+                                hover_data={'value': True},
+                                size='value', 
+                                color='value', 
+                                color_continuous_scale=px.colors.cyclical.IceFire,
+                                size_max=40,
+                                zoom=3, 
+                                height=550)
+
+    fig.update_layout(mapbox_style="open-street-map")
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+
+    st.plotly_chart(fig, use_container_width=True)
 
 
 

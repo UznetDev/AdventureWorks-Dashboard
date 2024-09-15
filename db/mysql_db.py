@@ -457,7 +457,7 @@ class Database:
 
             self.cursor.execute(sql, params)
             result = self.cursor.fetchone()
-            return result  # (TotalRevenue, ProductionCost, DeliveryCost, NetProfit)
+            return result
         except mysql.connector.Error as err:
             logging.error(err)
             self.reconnect()
