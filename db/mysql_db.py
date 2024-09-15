@@ -465,5 +465,82 @@ class Database:
         except Exception as err:
             logging.error(err)
             return None
+        
+
+    def get_shipmethod_distribution(self, metric='TotalRevenue', location=None, category=None):
+        """
+        Retrieves the distribution of the specified metric by ShipMethod,
+        optionally filtered by location and category.
+
+        Parameters:
+        - metric (str): The metric to aggregate ('TotalRevenue' or 'OrderCount').
+        - location (str): The name of the location to filter by.
+        - category (str): The name of the product category to filter by.
+
+        Returns:
+        - List of tuples containing ShipMethod names and aggregated values.
+        """
+        try:
+            if metric == 'TotalRevenue':
+                sql = """
+                SELECT sm.Name AS ShipMethod, SUM(sod.LineTotal) AS TotalRevenue
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                JOIN Purchasing_ShipMethod sm ON soh.ShipMethodID = sm.ShipMethodID
+                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                """
+            elif metric == 'OrderCount':
+                sql = """
+                SELECT sm.Name AS ShipMethod, COUNT(*) AS OrderCount
+                FROM Sales_SalesOrderHeader soh
+                JOIN Purchasing_ShipMethod sm ON soh.ShipMethodID = sm.ShipMethodID
+                JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                """
+            else:
+                # Default to TotalRevenue if metric is unrecognized
+                sql = """
+                SELECT sm.Name AS ShipMethod, SUM(sod.LineTotal) AS TotalRevenue
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                JOIN Purchasing_ShipMethod sm ON soh.ShipMethodID = sm.ShipMethodID
+                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                """
+
+            conditions = []
+            params = []
+
+            if location and location != 'All':
+                conditions.append("st.Name = %s")
+                params.append(location)
+
+            if category and category != 'All':
+                conditions.append("pc.Name = %s")
+                params.append(category)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY sm.Name ORDER BY {} DESC;".format(metric)
+
+            self.cursor.execute(sql, params)
+            result = self.cursor.fetchall()
+            return result
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+            return []
+        except Exception as err:
+            logging.error(err)
+            return []
 
 

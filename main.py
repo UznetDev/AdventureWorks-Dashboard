@@ -309,6 +309,50 @@ with col2:
     st.plotly_chart(fig, use_container_width=True)
 
 
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    metric_option = st.selectbox('Select Metric', ['Total Revenue', 'Number of Orders'], key='metric_selectbox')
+with col2:
+    selected_location = st.selectbox('Select Location', ['All'] + locations, key='location_selectbox')
+with col3:
+    selected_category = st.selectbox('Select Product Category', ['All'] + categories, key='category_selectbox')
+
+col1, col2, col3 = st.columns(3)
+with col1:
+
+    if metric_option == 'Total Revenue':
+        metric = 'TotalRevenue'
+    else:
+        metric = 'OrderCount'
+
+    shipmethod_data = db.get_shipmethod_distribution(
+        metric=metric,
+        location=selected_location,
+        category=selected_category
+    )
+
+    if shipmethod_data:
+        if metric == 'TotalRevenue':
+            df = pd.DataFrame(shipmethod_data, columns=['ShipMethod', 'TotalRevenue'])
+            df['TotalRevenue'] = df['TotalRevenue'].astype(float)
+            values_column = 'TotalRevenue'
+            title = 'Total Revenue by Ship Method'
+        else:
+            df = pd.DataFrame(shipmethod_data, columns=['ShipMethod', 'OrderCount'])
+            df['OrderCount'] = df['OrderCount'].astype(int)
+            values_column = 'OrderCount'
+            title = 'Number of Orders by Ship Method'
+
+        fig = px.pie(df, names='ShipMethod', values=values_column, title=title, hole=0.4)
+        fig.update_traces(pull=[0.04, 0.06, 0.08, 0.1],
+                        textinfo='percent+label',
+                        marker=dict(line=dict(color='white', width=2)))
+
+        st.plotly_chart(fig)
+    else:
+        st.warning('No data available to display the Ship Method distribution.')
+
 
 
 
