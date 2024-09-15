@@ -19,6 +19,7 @@ class Database:
         self.database = database
         self.reconnect()
 
+
     def reconnect(self):
         """
         Reconnect to the MySQL database. If the connection fails, log the error and attempt to reconnect.
@@ -94,6 +95,7 @@ class Database:
             self.reconnect()
         except Exception as err:
             logging.error(err)
+
 
     def get_total_profit(self):
         try:
@@ -333,6 +335,7 @@ class Database:
             logging.error(err)
             return []
 
+
     def get_categories(self):
         """
         Retrieve a list of available product categories.
@@ -350,6 +353,7 @@ class Database:
         except Exception as err:
             logging.error(err)
             return []
+
 
     def get_financial_breakdown(self, location=None, category=None):
         """
@@ -393,7 +397,8 @@ class Database:
         except Exception as err:
             logging.error(err)
             return None
-        
+
+
     def get_shipmethod_distribution(self, metric='TotalRevenue', location=None, category=None):
         """
         Retrieves the distribution of the specified metric by ShipMethod,
@@ -408,7 +413,6 @@ class Database:
         - List of tuples containing ShipMethod names and aggregated values.
         """
         try:
-            # Initialize the base SQL query depending on the metric
             if metric == 'TotalRevenue':
                 sql = """
                 SELECT sm.Name AS ShipMethod, SUM(sod.LineTotal) AS TotalRevenue
@@ -446,7 +450,6 @@ class Database:
                 """
                 order_by_column = "TotalRevenue"
 
-            # Handle optional filters
             conditions = []
             params = []
 
@@ -458,14 +461,11 @@ class Database:
                 conditions.append("pc.Name = %s")
                 params.append(category)
 
-            # Append conditions to SQL query
             if conditions:
                 sql += " WHERE " + " AND ".join(conditions)
 
-            # Group by and order by dynamically based on the metric
             sql += f" GROUP BY sm.Name ORDER BY {order_by_column} DESC;"
 
-            # Execute query
             self.cursor.execute(sql, params)
             result = self.cursor.fetchall()
             return result
@@ -478,8 +478,6 @@ class Database:
             return []
 
 
-
-
     def get_sales_by_day(self, option, location=None, category=None):
         try:
             if location is None and category is None:
@@ -487,11 +485,15 @@ class Database:
                     SELECT DAY(DueDate) AS day, 
                         pc.Name AS product_category, 
                         SUM({option}) AS category_sales
-                    FROM Sales_SalesOrderHeader s
-                    JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
-                    JOIN Production_Product p ON sod.ProductID = p.ProductID
-                    JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                    JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                    FROM Sales_SalesOrderDetail sod
+                    JOIN Sales_SalesOrderHeader soh 
+                    ON sod.SalesOrderID = soh.SalesOrderID
+                    JOIN Production_Product p 
+                    ON sod.ProductID = p.ProductID
+                    LEFT JOIN Production_ProductSubcategory psc 
+                    ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                    LEFT JOIN Production_ProductCategory pc 
+                    ON psc.ProductCategoryID = pc.ProductCategoryID
                     GROUP BY day, pc.Name
                     ORDER BY day
 
@@ -503,11 +505,16 @@ class Database:
                     SELECT DAY(soh.OrderDate) AS Day, 
                     SUM({option}) AS TotalSales
                     FROM Sales_SalesOrderDetail sod
-                    JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                    JOIN Production_Product p ON sod.ProductID = p.ProductID
-                    LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                    LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                    LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                    JOIN Sales_SalesOrderHeader soh 
+                    ON sod.SalesOrderID = soh.SalesOrderID
+                    JOIN Production_Product p 
+                    ON sod.ProductID = p.ProductID
+                    LEFT JOIN Production_ProductSubcategory psc 
+                    ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                    LEFT JOIN Production_ProductCategory pc 
+                    ON psc.ProductCategoryID = pc.ProductCategoryID
+                    LEFT JOIN Sales_SalesTerritory st 
+                    ON soh.TerritoryID = st.TerritoryID
                     """
                 conditions = []
                 params = []
@@ -534,7 +541,6 @@ class Database:
             logging.error(err)
 
 
-
     def get_sales_by_month(self, option, location=None, category=None):
         try:
             if location is None and category is None:
@@ -544,10 +550,14 @@ class Database:
                                 pc.Name AS product_category, 
                                 SUM({option}) AS category_sales
                             FROM Sales_SalesOrderHeader s
-                            JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
-                            JOIN Production_Product p ON sod.ProductID = p.ProductID
-                            JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                            JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                            JOIN Sales_SalesOrderDetail sod 
+                            ON s.SalesOrderID = sod.SalesOrderID
+                            JOIN Production_Product p 
+                            ON sod.ProductID = p.ProductID
+                            LEFT JOIN Production_ProductSubcategory psc 
+                            ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                            LEFT JOIN Production_ProductCategory pc 
+                            ON psc.ProductCategoryID = pc.ProductCategoryID
                             JOIN month m ON MONTH(s.DueDate) = m.number
                             GROUP BY m.name, m.number, pc.Name
                             ORDER BY m.number
@@ -565,11 +575,16 @@ class Database:
                         SELECT m.name AS month, 
                         SUM({option}) AS TotalSales
                         FROM Sales_SalesOrderDetail sod
-                        JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                        JOIN Production_Product p ON sod.ProductID = p.ProductID
-                        LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                        LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                        LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                        JOIN Sales_SalesOrderHeader soh 
+                        ON sod.SalesOrderID = soh.SalesOrderID
+                        JOIN Production_Product p 
+                        ON sod.ProductID = p.ProductID
+                        LEFT JOIN Production_ProductSubcategory psc 
+                        ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                        LEFT JOIN Production_ProductCategory pc 
+                        ON psc.ProductCategoryID = pc.ProductCategoryID
+                        LEFT JOIN Sales_SalesTerritory st 
+                        ON soh.TerritoryID = st.TerritoryID
                         JOIN month m
                         ON MONTH(soh.DueDate) = m.number
                         """
@@ -659,20 +674,25 @@ class Database:
             logging.error(err)
 
 
-
-    def get_sales_by_day_with_category(self, location=None):
+    def get_sales_by_day_with_category(self,option, location=None):
         """
         Retrieves the sales data by day of the month, broken down by category.
         Optionally filtered by location.
         """
         try:
-            sql = """
-            SELECT DAY(soh.OrderDate) AS Day, pc.Name AS Category, SUM(sod.LineTotal) AS TotalSales
+            sql = f"""
+            SELECT DAY(soh.OrderDate) AS Day,
+                pc.Name AS Category, 
+                SUM({option}) AS TotalSales
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-            JOIN Production_Product p ON sod.ProductID = p.ProductID
-            LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+            JOIN Sales_SalesOrderHeader soh 
+            ON sod.SalesOrderID = soh.SalesOrderID
+            JOIN Production_Product p 
+            ON sod.ProductID = p.ProductID
+            LEFT JOIN Production_ProductSubcategory psc 
+            ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc 
+            ON psc.ProductCategoryID = pc.ProductCategoryID
             LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
             """
             conditions = []
@@ -698,18 +718,23 @@ class Database:
             logging.error(err)
             return []
 
-    def get_sales_by_month_with_category(self, location=None):
+
+    def get_sales_by_month_with_category(self,option, location=None):
         try:
-            sql = """
+            sql = f"""
             SELECT m.name AS month, 
             pc.Name AS Category, 
-            SUM(sod.LineTotal) AS TotalSales
+            SUM({option}) AS TotalSales
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+            JOIN Sales_SalesOrderHeader soh 
+            ON sod.SalesOrderID = soh.SalesOrderID
             JOIN Production_Product p ON sod.ProductID = p.ProductID
-            LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-            LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+            LEFT JOIN Production_ProductSubcategory psc 
+            ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc 
+            ON psc.ProductCategoryID = pc.ProductCategoryID
+            LEFT JOIN Sales_SalesTerritory st 
+            ON soh.TerritoryID = st.TerritoryID
             JOIN month m
             ON MONTH(soh.DueDate) = m.number
             """
@@ -740,20 +765,28 @@ class Database:
             logging.error(err)
             return []
 
-    def get_sales_by_year_with_category(self, location=None):
+
+    def get_sales_by_year_with_category(self, option, location=None):
         """
         Retrieves the sales data by year, broken down by category.
         Optionally filtered by location.
         """
         try:
-            sql = """
-            SELECT YEAR(soh.OrderDate) AS Year, pc.Name AS Category, SUM(sod.LineTotal) AS TotalSales
+            sql = f"""
+            SELECT YEAR(soh.OrderDate) AS year, 
+            pc.Name AS Category, 
+            SUM({option}) AS TotalSales
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-            JOIN Production_Product p ON sod.ProductID = p.ProductID
-            LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-            LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+            JOIN Sales_SalesOrderHeader soh 
+            ON sod.SalesOrderID = soh.SalesOrderID
+            JOIN Production_Product p 
+            ON sod.ProductID = p.ProductID
+            LEFT JOIN Production_ProductSubcategory psc 
+            ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc 
+            ON psc.ProductCategoryID = pc.ProductCategoryID
+            LEFT JOIN Sales_SalesTerritory st 
+            ON soh.TerritoryID = st.TerritoryID
             """
             conditions = []
             params = []
