@@ -260,6 +260,51 @@ with col1:
     st.plotly_chart(fig, use_container_width=True)
 
 
+with col2:
+    locations = db.get_locations()
+    categories = db.get_categories()
+
+    selected_location = st.selectbox('Select Location', ['All'] + locations)
+    selected_category = st.selectbox('Select Category', ['All'] + categories)
+
+    financial_data = db.get_financial_breakdown(location=selected_location, category=selected_category)
+
+    if financial_data:
+        total_revenue, production_cost, delivery_cost, net_profit = financial_data
+
+        if not any([total_revenue, production_cost, delivery_cost, net_profit]):
+            st.warning('No data found for the selected parameters.')
+        else:
+            total_revenue = float(total_revenue or 0)
+            production_cost = float(production_cost or 0)
+            delivery_cost = float(delivery_cost or 0)
+            net_profit = float(net_profit or 0)
+            other_expenses = 0.0
+
+            labels = ['Production Costs', 'Delivery Costs', 'Other Expenses', 'Net Profit']
+            values = [production_cost, delivery_cost, other_expenses, net_profit]
+
+            values = [v if v > 0 else 0 for v in values]
+
+            total = sum(values)
+
+            if total == 0:
+                st.warning('No financial data available for the selected parameters.')
+            else:
+                df = pd.DataFrame({
+                    'Labels': labels,
+                    'Values': values
+                })
+
+                fig = px.pie(df, names='Labels', values='Values', title='Financial Breakdown Using Net Profit', hole=0.4)
+                fig.update_traces(textinfo='percent+label')
+
+                st.plotly_chart(fig)
+    else:
+        st.error('An error occurred while retrieving data.')
+
+
+
 
 
 if __name__ == "__main__":

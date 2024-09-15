@@ -42,3 +42,13 @@ ADD NetProfit FLOAT;
 UPDATE Sales_SalesOrderDetail sod
 JOIN Production_Product p ON sod.ProductID = p.ProductID
 SET sod.NetProfit = sod.LineTotal - (sod.OrderQty * p.StandardCost);
+
+
+-- Add NetProfit column
+ALTER TABLE Sales_SalesOrderDetail
+ADD NetProfit FLOAT;
+
+-- -- Update NetProfit values
+-- UPDATE Sales_SalesOrderDetail sod
+-- JOIN Production_Product p ON sod.ProductID = p.ProductID
+-- SET sod.NetProfit = sod.LineTotal - (sod.OrderQty * p.StandardCost);

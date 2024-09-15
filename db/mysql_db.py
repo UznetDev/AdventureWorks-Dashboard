@@ -385,4 +385,85 @@ class Database:
         except Exception as err:
             logging.error(err)
             return []
+        
+    
+    def get_locations(self):
+        """
+        Retrieve a list of available locations.
+        """
+        try:
+            sql = "SELECT DISTINCT Name FROM Sales_SalesTerritory"
+            self.cursor.execute(sql)
+            result = self.cursor.fetchall()
+            locations = [row[0] for row in result]
+            return locations
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+            return []
+        except Exception as err:
+            logging.error(err)
+            return []
+
+    def get_categories(self):
+        """
+        Retrieve a list of available product categories.
+        """
+        try:
+            sql = "SELECT DISTINCT Name FROM Production_ProductCategory"
+            self.cursor.execute(sql)
+            result = self.cursor.fetchall()
+            categories = [row[0] for row in result]
+            return categories
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+            return []
+        except Exception as err:
+            logging.error(err)
+            return []
+
+    def get_financial_breakdown(self, location=None, category=None):
+        """
+        Retrieve financial data based on selected location and category using NetProfit.
+        """
+        try:
+            sql = """
+            SELECT 
+                SUM(sod.LineTotal) AS TotalRevenue,
+                SUM(sod.OrderQty * p.StandardCost) AS ProductionCost,
+                SUM(soh.Freight / soh.SubTotal * sod.LineTotal) AS DeliveryCost,
+                SUM(sod.NetProfit) AS NetProfit
+            FROM Sales_SalesOrderDetail sod
+            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+            JOIN Production_Product p ON sod.ProductID = p.ProductID
+            LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+            LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+            """
+            conditions = []
+            params = []
+
+            if location and location != 'All':
+                conditions.append("st.Name = %s")
+                params.append(location)
+
+            if category and category != 'All':
+                conditions.append("pc.Name = %s")
+                params.append(category)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            self.cursor.execute(sql, params)
+            result = self.cursor.fetchone()
+            return result  # (TotalRevenue, ProductionCost, DeliveryCost, NetProfit)
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+            return None
+        except Exception as err:
+            logging.error(err)
+            return None
+
 
