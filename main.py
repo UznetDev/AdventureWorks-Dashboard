@@ -203,10 +203,10 @@ with col3:
     )
     st.plotly_chart(fig)
 
-col, col1, col2, col3 = st.columns(4)
+col1, col2 = st.columns(2)
 
 
-with col:
+with col1:
     data = db.get_map(option)
     if not data:
         st.error("Ma'lumotlarni olishda xatolik yuz berdi yoki ma'lumotlar mavjud emas.")
@@ -215,21 +215,16 @@ with col:
     df = pd.DataFrame(data, columns=['city', 'Longitude', 'Latitude', 'value'])
     df['value'] = pd.to_numeric(df['value'], errors='coerce')
 
-    # NaN qiymatlarni va manfiy qiymatlarni olib tashlash
     df = df.dropna(subset=['Longitude', 'Latitude', 'value'])
 
-    # Manfiy qiymatlar bilan ishlash
     if option == 'NetProfit':
-        # Manfiy va musbat qiymatlarni ajratamiz
         df['ProfitType'] = df['value'].apply(lambda x: 'Profit' if x > 0 else 'Loss')
-        df['abs_value'] = df['value'].abs()  # Marker o'lchami uchun absolyut qiymatni olamiz
+        df['abs_value'] = df['value'].abs()
 
-        # Agar data bo'sh bo'lib qolsa, xabar berish
         if df.empty:
             st.warning("Tanlangan parametr bo'yicha ma'lumotlar topilmadi.")
             st.stop()
 
-        # Xarita yaratish
         fig = px.scatter_mapbox(df,
                                 lat="Latitude", 
                                 lon="Longitude",
@@ -241,7 +236,6 @@ with col:
                                 zoom=3, 
                                 height=600)
     else:
-        # Faqat musbat qiymatlarni qoldiramiz
         df = df[df['value'] > 0]
 
         if df.empty:
@@ -258,7 +252,7 @@ with col:
                                 color_continuous_scale=px.colors.cyclical.IceFire,
                                 size_max=40,
                                 zoom=3, 
-                                height=600)
+                                height=400)
 
     fig.update_layout(mapbox_style="open-street-map")
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
