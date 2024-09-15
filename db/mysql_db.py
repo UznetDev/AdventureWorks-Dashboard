@@ -321,7 +321,7 @@ class Database:
                     pat.City AS city,
                     ST_X(SpatialLocation) AS Longitude, 
                     ST_Y(SpatialLocation) AS Latitude,
-                    SUM(sod.OrderQty) AS OrderQty
+                    SUM({option}) AS value
                 FROM Sales_SalesOrderDetail sod
                 JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
                 JOIN Person_BusinessEntityAddress pbea ON pbea.BusinessEntityID = soh.SalesPersonID
@@ -335,3 +335,28 @@ class Database:
             self.reconnect()
         except Exception as err:
             logging.error(err)
+
+
+    def get_sales_by_reason_type(self, option):
+        try:
+            sql = f"""
+                SELECT
+                    sr.ReasonType,
+                    SUM({option}) AS TotalSales
+                FROM
+                    Sales_SalesOrderDetail sod
+                    JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                    INNER JOIN Sales_SalesOrderHeaderSalesReason sohsr ON soh.SalesOrderID = sohsr.SalesOrderID
+                    INNER JOIN Sales_SalesReason sr ON sohsr.SalesReasonID = sr.SalesReasonID
+                GROUP BY
+                    sr.ReasonType;
+            """
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            logging.error(err)
+            self.reconnect()
+            return []
+        except Exception as err:
+            logging.error(err)
+            return []

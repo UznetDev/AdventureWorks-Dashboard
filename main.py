@@ -132,17 +132,44 @@ online_sales_p = db.get_online_persentage(option)
 col, col1, col2, col3 = st.columns(4)
 
 with col:
-    st.write(online_sales_p)
     df = pd.DataFrame(online_sales_p, columns=['Flag', option])
-    fig = px.pie(df, names='Flag', values=option, hole=0.4, 
+    fig = px.pie(df, 
+                 names='Flag', 
+                 values=option, 
+                 hole=0.4, 
                 title='Online vs Offline Orders')
     fig.update_traces(textinfo='percent+label',
                     pull=[0.1, 0],
                     marker=dict(line=dict(color='white', width=5)))
 
     fig.update_layout(
-    # title_font=dict(size=20, family='Arial, bold', color='red'),
     font=dict(size=16, color='#F39C12'),
+    showlegend=True,
+    legend=dict(
+        font=dict(size=16),
+        title_font_family="Arial"
+        )
+    )
+    st.plotly_chart(fig)
+
+
+
+    data = db.get_sales_by_reason_type(option)
+    df = pd.DataFrame(data, columns=['ReasonType', option])
+
+    fig = px.pie(
+        df, 
+        values=option, 
+        names='ReasonType', 
+        title='ReasonType bo‘yicha umumiy sotuv', 
+        hole=0.4
+    )
+    fig.update_traces(textinfo='percent+label',
+                    pull=[0.1, 0],
+                    marker=dict(line=dict(color='white', width=5)))
+
+    fig.update_layout(
+    font=dict(size=10, color='#F39C12'),
     showlegend=True,
     legend=dict(
         font=dict(size=16),
