@@ -74,8 +74,8 @@ with col5:
 
 st.markdown("######  :blue[***This will affect the overall dashboard.***]")
 option = st.selectbox(
-    'Choice: TotalDue, OrderQty, LineTotal, NetProfit, UnitPrice',
-    ('TotalDue', 'OrderQty', 'LineTotal', 'NetProfit', 'UnitPrice')
+    'Choice:',
+    ('TotalDue', 'OrderQty', 'LineTotal', 'NetProfit', 'UnitPrice', 'TaxAmt', 'Freight', 'SubTotal')
 )
 
 
@@ -124,8 +124,9 @@ with col2:
             fig = px.bar(df, x='Territory', y=option, color='Category', 
                         title='Sold Territory', 
                         labels={option: option, 'Category': 'Product Category'},
-                        orientation='v', 
-                        text=option)
+                        orientation='v',
+                        text=option
+                        )
 
             fig.update_layout(
                 xaxis_title="Territory",
@@ -250,7 +251,8 @@ with col2:
 
             fig = px.line(df, x='Month', y=option, color='Category',
                                 title='Product Sales by Month',
-                                hover_data={option: True})
+                                hover_data={option: True},
+                                )
             
             st.plotly_chart(fig, use_container_width=True)
         else:
@@ -641,8 +643,6 @@ footer = """
     </div>
     """
 st.markdown(footer, unsafe_allow_html=True)
-
-
 
 
 if __name__ == "__main__":
