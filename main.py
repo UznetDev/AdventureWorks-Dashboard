@@ -31,8 +31,7 @@ total_due = db.get_total_due()
 total_profit = db.get_total_profit()
 sales_count = db.get_sales_count()
 
-st.title("AdventureWorks Sales Dashboard")
-
+st.header(':blue[AdventureWorks] Dashboard')
 
 col1, col2, col3 = st.columns(3)
 
@@ -57,7 +56,7 @@ with col3:
 
 
 option = st.selectbox(
-    'Tanlang: Total Sales (TotalDue) yoki Order Quantity (OrderQty)',
+    'Choice: TotalDue, OrderQty, LineTotal, NetProfit, UnitPrice',
     ('TotalDue', 'OrderQty', 'LineTotal', 'NetProfit', 'UnitPrice')
 )
 
