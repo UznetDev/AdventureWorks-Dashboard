@@ -66,8 +66,12 @@ option = st.selectbox(
 
 
 # Part 1
-st.markdown("######  ***You can get information here about the market share of each category,\
-             sales in each territory, and products in each region.***")
+# st.markdown("######  ***You can get information here about the market share of each category,\
+#              sales in each territory, and products in each region.***")
+text = 'You can get information here about the market share of each category,\
+    sales in each territory, and products in each region.'
+st.write_stream(write_stream_text(text, 0.1))
+
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -153,8 +157,13 @@ with col3:
 
 # Part 2
 
-st.markdown("######  ***You can view the share of online and offline customers,\
-             the ReasonType, as well as daily, monthly, and yearly sales, categorized by product.***")
+# st.markdown("######  ***You can view the share of online and offline customers,\
+#              the ReasonType, as well as daily, monthly, and yearly sales, categorized by product.***")
+
+
+text = 'You can view the share of online and offline customers,\
+    the ReasonType, as well as daily, monthly, and yearly sales, categorized by product.'
+st.write_stream(write_stream_text(text, 0.1))
 
 col, col1, col2, col3 = st.columns(4)
 
@@ -266,9 +275,14 @@ with col3:
 
 # Page 3
 
-st.markdown("######  ***In this view, you can see what percentage of the total sales price is taken by each cost. \
-            You can select the product type and the country. Additionally, \
-            a map shows the locations where the products were sold.***")
+# st.markdown("######  ***In this view, you can see what percentage of the total sales price is taken by each cost. \
+#             You can select the product type and the country. Additionally, \
+#             a map shows the locations where the products were sold.***")
+
+text = 'In this view, you can see what percentage of the total sales price is taken by each cost. \
+    You can select the product type and the country. Additionally, \
+    a map shows the locations where the products were sold.'
+st.write_stream(write_stream_text(text, 0.1))
 
 col1, col2 = st.columns(2)
 
@@ -382,10 +396,14 @@ with col2:
 
 # Page 4
 
-st.markdown("######  ***In this view,\
-             you can see the share of product metrics and the sales for each day,\
-             month, and year. Use the filters to refine the data.***")
+# st.markdown("######  ***In this view,\
+#              you can see the share of product metrics and the sales for each day,\
+#              month, and year. Use the filters to refine the data.***")
 
+text = 'In this view,\
+    you can see the share of product metrics and the sales for each day,\
+    month, and year. Use the filters to refine the data.'
+st.write_stream(write_stream_text(text, 0.1))
 
 locations = db.get_locations()
 categories = db.get_categories()
@@ -403,8 +421,6 @@ with col4:
     selected_location = st.selectbox('Select Location', ['All'] + locations, key='location_sales_selectbox')
 
 sales_data_day = db.get_sales_by_day(option=option, location=selected_location, category=selected_category)
-
-
 
 
 with col1:
