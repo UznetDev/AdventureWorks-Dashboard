@@ -27,11 +27,15 @@ st.markdown(st_style,
             unsafe_allow_html=True)
 
 
+
 total_due = db.get_total_due()
 total_profit = db.get_total_profit()
 sales_count = db.get_sales_count()
 
 st.header(':blue[AdventureWorks] Dashboard')
+
+# text = "Regional and country population rankings and shares."
+# st.write_stream(write_stream_text(text, 0.3))
 
 col1, col2, col3 = st.columns(3)
 
@@ -581,6 +585,33 @@ with col4:
         logging.error(err)
 
 
+footer = """
+    <style>
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background-color: rgba(0, 0, 255, 0.1);  /* Very transparent blue */
+        text-align: center;
+        padding: 10px;
+        font-size: 14px;
+        color: #FFFFFF;  /* White text color */
+    }
+    .footer a {
+        color: #FFD700;  /* Golden link color */
+        text-decoration: none;
+    }
+    .footer a:hover {
+        text-decoration: underline;
+    }
+    </style>
+    <div class="footer">
+        <p>AdventureWorks Dashboard | Data Source: AdventureWorks Database | © 2024 UZNetDev <a href="https://github.com/UznetDev/AdventureWorks-Dashboard.git" target="_blank">GitHub</a></p>
+    </div>
+    """
+st.markdown(footer, unsafe_allow_html=True)
+
 
 
 
@@ -595,3 +626,6 @@ if __name__ == "__main__":
         format=format,  # Set the logging format
         stream=sys.stdout  # Log to stdout
     )
+
+
+
