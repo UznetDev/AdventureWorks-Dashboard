@@ -109,7 +109,7 @@ MYSQL_DATABASE= <your MySQL database>
         
      if __name__ == "__main__":
         script_path = " <PATH DIRECTORY> /AdventureWorks-Dashboard/🏠_Home.py"
-        sys.argv = ["streamlit", "run", script_path, "--server.port", "1212"]
+        sys.argv = ["streamlit", "run", script_path, "--server.port", "< port >"]
         stcli.main()
     ```
 
