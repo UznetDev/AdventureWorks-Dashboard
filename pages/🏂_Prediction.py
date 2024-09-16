@@ -10,7 +10,7 @@ from datetime import datetime
 
 
 
-st.set_page_config(page_title="Sales Dashboard",
+st.set_page_config(page_title="Sales Prediction",
                    page_icon=":bar_chart:",
                    layout="wide")
 
