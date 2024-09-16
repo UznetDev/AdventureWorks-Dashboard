@@ -33,36 +33,39 @@ class Database:
         Raises:
         mysql.connector.Error: If unable to connect after the specified retries.
         """
-        if err:
-            print(err)
-        
-        if connection:
-            logging.info('Connect to MYSQL')
-        else:
-            logging.warning('reconnecting MYSQL')
-        attempt = 0
-        while attempt < retries:
-            try:
-                self.connection = mysql.connector.connect(
-                    host=self.host,
-                    user=self.user,
-                    password=self.password,
-                    database=self.database,
-                    autocommit=True
-                )
-                self.cursor = self.connection.cursor()
-                logging.info('MYSQL connected!')
-                break
-            except mysql.connector.Error as err:
-                logging.error(f"Error connecting to database: {err}")
-                attempt += 1
-                if attempt == retries:
-                    raise
-            except Exception as err:
-                logging.error(f"Unexpected error: {err}")
-                attempt += 1
-                if attempt == retries:
-                    raise
+        try:
+            if err:
+                print(err)
+            
+            if connection:
+                logging.info('Connect to MYSQL')
+            else:
+                logging.warning('reconnecting MYSQL')
+            attempt = 0
+            while attempt < retries:
+                try:
+                    self.connection = mysql.connector.connect(
+                        host=self.host,
+                        user=self.user,
+                        password=self.password,
+                        database=self.database,
+                        autocommit=True
+                    )
+                    self.cursor = self.connection.cursor()
+                    logging.info('MYSQL connected!')
+                    break
+                except mysql.connector.Error as err:
+                    logging.error(f"Error connecting to database: {err}")
+                    attempt += 1
+                    if attempt == retries:
+                        raise
+                except Exception as err:
+                    logging.error(f"Unexpected error: {err}")
+                    attempt += 1
+                    if attempt == retries:
+                        raise
+        except Exception as err:
+            logging.error(err)
 
 
     def create_table_sales_per_day(self):
@@ -88,10 +91,10 @@ class Database:
         except mysql.connector.Error as err:
             self.reconnect(err=err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
-            return []
+            return None
 
 
     def insert_table_sales_per_day(self):
@@ -125,11 +128,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_total_due(self):
@@ -150,11 +153,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_total_profit(self):
@@ -180,11 +183,11 @@ class Database:
         except mysql.connector.Error as err:
             logging.error(f"MySQL Error: {err}")
             self.reconnect()
-            return []
+            return None
         except Exception as err:
             logging.error(f"Unexpected Error: {err}")
             self.reconnect()
-            return []
+            return None
 
                 
 
@@ -206,11 +209,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_sales_by_category(self, option):
@@ -247,11 +250,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_sales_by_territory(self, option):
@@ -287,11 +290,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_sales_by_p_region(self, option):
@@ -332,11 +335,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
     
 
     def get_sales_by_month(self, option, location=None, category=None):
@@ -405,11 +408,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_sales_by_year(self, option, location=None, category=None):
@@ -477,11 +480,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_sales_by_reason_type(self, option):
@@ -511,11 +514,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_map(self, option):
@@ -557,11 +560,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_online_percentage(self, option):
@@ -608,11 +611,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_locations(self):
@@ -635,11 +638,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_categories(self):
@@ -662,11 +665,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_financial_breakdown(self, location=None, category=None):
@@ -718,11 +721,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_shipmethod_distribution(self, metric='TotalRevenue', location=None, category=None):
@@ -801,11 +804,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_sales_by_day(self, option, location=None, category=None):
@@ -882,11 +885,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_sales_by_day_with_category(self, option, location=None):
@@ -935,11 +938,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_sales_by_month_with_category(self, option, location=None):
@@ -993,11 +996,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_sales_by_year_with_category(self, option, location=None):
@@ -1046,11 +1049,11 @@ class Database:
             self.reconnect(err=err)
             print(err)
             self.reconnect(err=err)
-            return []
+            return None
         except Exception as err:
             self.reconnect(err=err)
             print(err)
-            return []
+            return None
 
 
     def get_all_data(self):
@@ -1116,4 +1119,4 @@ class Database:
             return result
         except mysql.connector.Error as err:
             logging.error(f"MySQL error: {err}")
-            return []
+            return None
