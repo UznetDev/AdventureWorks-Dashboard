@@ -146,7 +146,10 @@ class Database:
         mysql.connector.Error: If there is an error executing the query.
         """
         try:
-            sql = """SELECT SUM(TotalDue) FROM `Sales_SalesOrderHeader`"""
+            sql = """SELECT SUM(TotalDue * OrderQty )
+            FROM Sales_SalesOrderDetail sod
+                    JOIN Sales_SalesOrderHeader soh 
+                    ON sod.SalesOrderID = soh.SalesOrderID"""
             self.cursor.execute(sql)
             return self.cursor.fetchone()[0]
         except mysql.connector.Error as err:
@@ -862,11 +865,11 @@ class Database:
                 sql = f"""
                     SELECT DAY(DueDate) AS day, 
                            pc.Name AS product_category, 
-                           SUM({option}) AS category_sales
+                           SUM({option}) AS TotalSales
                     FROM Sales_SalesOrderDetail sod
-                    JOIN Sales_SalesOrderHeader soh 
+                    LEFT JOIN Sales_SalesOrderHeader soh 
                     ON sod.SalesOrderID = soh.SalesOrderID
-                    JOIN Production_Product p 
+                    LEFT JOIN Production_Product p 
                     ON sod.ProductID = p.ProductID
                     LEFT JOIN Production_ProductSubcategory psc 
                     ON p.ProductSubcategoryID = psc.ProductSubcategoryID
@@ -939,15 +942,19 @@ class Database:
         """
         try:
             sql = f"""
-            SELECT DAY(soh.OrderDate) AS Day,
-                   pc.Name AS Category, 
+            SELECT DAY(soh.OrderDate) AS day,
+                   pc.Name AS Category,
                    SUM({option}) AS TotalSales
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+            JOIN Sales_SalesOrderHeader soh
+            ON sod.SalesOrderID = soh.SalesOrderID
             JOIN Production_Product p ON sod.ProductID = p.ProductID
-            LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-            LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+            LEFT JOIN Production_ProductSubcategory psc 
+            ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc
+            ON psc.ProductCategoryID = pc.ProductCategoryID
+            LEFT JOIN Sales_SalesTerritory st 
+            ON soh.TerritoryID = st.TerritoryID
             """
             conditions = []
             params = []
@@ -959,7 +966,7 @@ class Database:
             if conditions:
                 sql += " WHERE " + " AND ".join(conditions)
 
-            sql += " GROUP BY DAY(soh.OrderDate), pc.Name ORDER BY Day"
+            sql += " GROUP BY DAY(soh.OrderDate), pc.Name ORDER BY day"
 
             self.cursor.execute(sql, params)
             result = self.cursor.fetchall()
