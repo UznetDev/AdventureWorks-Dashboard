@@ -20,10 +20,10 @@ class Database:
         self.user = user
         self.password = password
         self.database = database
-        self.reconnect()
+        self.reconnect(connection=True)
 
 
-    def reconnect(self,err=None, retries=5):
+    def reconnect(self,err=None, retries=5, connection=False):
         """
         Reconnects to the MySQL database if the connection is lost. This function attempts to reconnect multiple times in case of failure.
 
@@ -35,7 +35,11 @@ class Database:
         """
         if err:
             print(err)
-        logging.warning('reconnecting MYSQL')
+        
+        if connection:
+            logging.info('Connect to MYSQL')
+        else:
+            logging.warning('reconnecting MYSQL')
         attempt = 0
         while attempt < retries:
             try:
@@ -47,6 +51,7 @@ class Database:
                     autocommit=True
                 )
                 self.cursor = self.connection.cursor()
+                logging.info('MYSQL connected!')
                 break
             except mysql.connector.Error as err:
                 logging.error(f"Error connecting to database: {err}")
