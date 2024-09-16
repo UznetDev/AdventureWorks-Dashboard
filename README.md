@@ -1,4 +1,4 @@
-# AdventureWorks Sales TotalDue Prediction Application
+# AdventureWorks Sales Dashboard Application
 
 In this program, dashboards and prediction models have been created using **Streamlit** on the AdventureWorks 2019 dataset. The app uses a machine learning model (Linear Regression) trained on sales data to make predictions. It is built using **Streamlit** for the frontend interface and **scikit-learn** for machine learning model development.
 
@@ -14,7 +14,7 @@ In this program, dashboards and prediction models have been created using **Stre
 
 ## Project Overview
 
-The Sales TotalDue Prediction app allows users to input various sales-related data fields such as `SalesOrderID`, `OrderQty`, `LineTotal`, `StandardCost`, and more. The application uses a pre-trained Linear Regression model to predict the total due for the given input data. This app can be used by businesses to estimate future order dues based on historical data.
+The Sales Dashboard app allows users to input various sales-related data fields such as `SalesOrderID`, `OrderQty`, `LineTotal`, `StandardCost`, and more. The application uses a pre-trained Linear Regression model to predict the total due for the given input data. This app can be used by businesses to estimate future order dues based on historical data. With the smart dashboard, you can view the current sales situation.
 
 ## Features
 
@@ -23,6 +23,7 @@ The Sales TotalDue Prediction app allows users to input various sales-related da
 - Automatically fills the date fields with the current date.
 - Displays an error message if any required fields are missing.
 - Easy-to-use web interface powered by **Streamlit**.
+- A dashboard and prediction model based on the AdventureWorks 2019 dataset, completely free to use.
 
 ## Technologies Used
 
@@ -68,7 +69,6 @@ To run this application locally, follow these steps:
    ```
 
 4. **Install the required dependencies:**
-
    ```bash
    pip install -r requirements.txt
    ```
