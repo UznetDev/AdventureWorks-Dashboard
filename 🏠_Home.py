@@ -218,7 +218,7 @@ with col:
 
 with col1:
     try:
-        by_day = db.get_sales_by_day(option=option,)
+        by_day = db.get_sales_by_day_with_category(option=option)
         if by_day:
             df = pd.DataFrame(by_day, columns=['Day', 'Category', option])
 
