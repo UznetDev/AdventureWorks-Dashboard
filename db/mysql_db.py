@@ -34,7 +34,6 @@ class Database:
         mysql.connector.Error: If unable to connect after the specified retries.
         """
         if err:
-            self.reconnect(err=err)
             print(err)
         logging.warning('reconnecting MYSQL')
         attempt = 0
