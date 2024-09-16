@@ -242,7 +242,7 @@ with col1:
 
 with col2:
     try:
-        by_month = db.get_sales_by_month(option=option)
+        by_month = db.get_sales_by_month_with_category(option=option)
         if by_month:
             df = pd.DataFrame(by_month, columns=['Month', 'Category', option])
                     
