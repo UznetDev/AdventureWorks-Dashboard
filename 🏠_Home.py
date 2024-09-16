@@ -87,40 +87,38 @@ with col1:
     st.plotly_chart(fig)
 
 with col2:
-    df = pd.DataFrame(by_tretory, columns=['Territory', 'Category', 'Total Sold'])
-    fig = px.bar(df, x='Territory', y='Total Sold', color='Category', 
-                title='Sold Category', 
-                labels={'Total Sold': 'Total Sold', 'Category': 'Product Category'},
+    df = pd.DataFrame(by_tretory, columns=['Territory', 'Category', option])
+    fig = px.bar(df, x='Territory', y=option, color='Category', 
+                title='Sold Territory', 
+                labels={option: option, 'Category': 'Product Category'},
                 orientation='v', 
-                text='Total Sold')
+                text=option)
 
     fig.update_layout(
         xaxis_title="Territory",
         yaxis_title="Total Sold",
         barmode='stack',
         coloraxis_colorbar=dict(
-            title="Product Category"
+            title="Product Territory"
         )
     )
     st.plotly_chart(fig, use_container_width=True)
 
 
-
-
 with col3:
-    df = pd.DataFrame(by_p_region, columns=['Region', 'Category', 'Total Sold'])
-    fig = px.bar(df, x='Total Sold', y='Region', color='Category', 
-                title='Products Category',
-                labels={'Total Sold': 'Total Sold', 'Category': 'Product Category'},
+    df = pd.DataFrame(by_p_region, columns=['Region', 'Category', option])
+    fig = px.bar(df, x=option, y='Region', color='Category', 
+                title='Products Region',
+                labels={option: option, 'Category': 'Product Category'},
                 orientation='h', 
-                text='Total Sold')
+                text=option)
 
     fig.update_layout(
         xaxis_title="Total Sold",
         yaxis_title="Region",
         barmode='stack',
         coloraxis_colorbar=dict(
-            title="Product Category"
+            title="Product Region"
         )
     )
     st.plotly_chart(fig, use_container_width=True)
@@ -130,7 +128,7 @@ with col3:
 by_month = db.get_sales_by_month(option=option)
 by_day = db.get_sales_by_day(option=option,)
 by_year = db.get_sales_by_year(option=option)
-online_sales_p = db.get_online_persentage(option=option)
+online_sales_p = db.get_online_percentage(option=option)
 
 col, col1, col2, col3 = st.columns(4)
 
@@ -166,7 +164,7 @@ with col1:
     df['data'] = normalize_data(df, option, 1, 10, response=True)
 
     fig = px.line(df, x='Month', y=option, color='Category',
-                          title='Product Category Sales by Month',
+                          title='Product Sales by Month',
                           hover_data={option: True})
     
     st.plotly_chart(fig, use_container_width=True)
@@ -177,23 +175,23 @@ with col2:
     df['data'] = normalize_data(df, option, 1, 10, response=True)
 
     fig = px.line(df, x='Day', y=option, color='Category',
-                title='Product Category Sales by Day',
+                title='Product Sales by Day',
                 hover_data={option: True})
 
     fig.update_layout(yaxis_type="log",
-                    title={'text': 'Product Category Sales by Day (Log Scale)',
+                    title={'text': 'Product Sales by Day',
                             'x':0.5, 'xanchor': 'center'})
 
     st.plotly_chart(fig, use_container_width=True)
 
 with col3:
-    df = pd.DataFrame(by_year, columns=['Year', 'ProductCategory', 'Total Sold'])
+    df = pd.DataFrame(by_year, columns=['Year', 'ProductCategory', option])
 
-    fig = px.bar(df, x='Year', y='Total Sold', color='ProductCategory', 
-                title='Total Products Sold by Year and Product Category', 
-                labels={'Total Sold': 'Total Sold', 'ProductCategory': 'Product Category'},
+    fig = px.bar(df, x='Year', y=option, color='ProductCategory', 
+                title='Total Sold by Year', 
+                labels={option: option, 'ProductCategory': 'Product Category'},
                 orientation='v', 
-                text='Total Sold')
+                text=option)
     fig.update_layout(
         xaxis_title="Year",
         yaxis_title="Total Sold",
@@ -374,11 +372,11 @@ with col2:
 
             if chart_type == 'Bar Chart':
                 fig_day = px.bar(df_day, x='Day', y='NormalizedSales', color='Category',
-                                title='Total Sales by Day (with Categories)', barmode='stack',
+                                title='Total Sales by Day', barmode='stack',
                                 hover_data={option: True, 'NormalizedSales': False})
             else:
                 fig_day = px.line(df_day, x='Day', y='NormalizedSales', color='Category',
-                                title='Total Sales by Day (with Categories)',
+                                title='Total Sales by Day',
                                 hover_data={option: True, 'NormalizedSales': False})
 
             st.plotly_chart(fig_day)
@@ -418,11 +416,11 @@ with col3:
 
             if chart_type == 'Bar Chart':
                 fig_month = px.bar(df_month, x='Month', y='NormalizedSales', color='Category',
-                                title='Total Sales by Month (with Categories)', barmode='stack',
+                                title='Total Sales by Month', barmode='stack',
                                 hover_data={option: True, 'NormalizedSales': False})
             else:
                 fig_month = px.line(df_month, x='Month', y='NormalizedSales', color='Category',
-                                    title='Total Sales by Month (with Categories)',
+                                    title='Total Sales by Month',
                                     hover_data={option: True, 'NormalizedSales': False})
 
             st.plotly_chart(fig_month)
@@ -460,11 +458,11 @@ with col4:
 
             if chart_type == 'Bar Chart':
                 fig_year = px.bar(df_year, x='Year', y='NormalizedSales', color='Category',
-                                title='Total Sales by Year (with Categories)', barmode='stack',
+                                title='Total Sales by Year', barmode='stack',
                                 hover_data={option: True, 'NormalizedSales': False})
             else:
                 fig_year = px.line(df_year, x='Year', y='NormalizedSales', color='Category',
-                                title='Total Sales by Year (with Categories)',
+                                title='Total Sales by Year',
                                 hover_data={option: True, 'NormalizedSales': False})
 
             st.plotly_chart(fig_year)
