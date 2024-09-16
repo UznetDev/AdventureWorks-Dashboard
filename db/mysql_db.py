@@ -159,6 +159,36 @@ class Database:
             print(err)
             return None
 
+    def get_total_person(self):
+        try:
+            sql = """SELECT COUNT(*) FROM `Person_Person`"""
+            self.cursor.execute(sql)
+            return self.cursor.fetchone()[0]
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            self.reconnect(err=err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+
+    def get_total_product(self):
+        try:
+            sql = """SELECT COUNT(*) FROM `Production_Product`"""
+            self.cursor.execute(sql)
+            return self.cursor.fetchone()[0]
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            self.reconnect(err=err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+
 
     def get_total_profit(self):
         """
@@ -1120,3 +1150,5 @@ class Database:
         except mysql.connector.Error as err:
             logging.error(f"MySQL error: {err}")
             return None
+
+

@@ -31,13 +31,15 @@ st.markdown(st_style,
 total_due = db.get_total_due()
 total_profit = db.get_total_profit()
 sales_count = db.get_sales_count()
+person_count = db.get_total_person()
+product_count = db.get_total_product()
 
 st.header(':blue[AdventureWorks] Dashboard')
 
 # text = "Regional and country population rankings and shares."
 # st.write_stream(write_stream_text(text, 0.3))
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4, col5 = st.columns(5)
 
 with col1:
     text1 = '<p style="font-family:sans-serif; color:White; font-size: 15px;">Total Due: 📖 </p>'
@@ -57,6 +59,18 @@ with col3:
     st.markdown(text1, unsafe_allow_html=True)
     st.markdown(text2, unsafe_allow_html=True)
 
+with col4:
+    text1 = '<p style="font-family:sans-serif; color:White; font-size: 15px;">User Count: 📖 </p>'
+    text2 = f'<p style="font-family:sans-serif; color:red; font-size: 20px;">{abbreviate_number(person_count)}</p>'
+    st.markdown(text1, unsafe_allow_html=True)
+    st.markdown(text2, unsafe_allow_html=True)
+
+
+with col5:
+    text1 = '<p style="font-family:sans-serif; color:White; font-size: 15px;">Product Count: 📖 </p>'
+    text2 = f'<p style="font-family:sans-serif; color:red; font-size: 20px;">{abbreviate_number(product_count)}</p>'
+    st.markdown(text1, unsafe_allow_html=True)
+    st.markdown(text2, unsafe_allow_html=True)
 
 st.markdown("######  :blue[***This will affect the overall dashboard.***]")
 option = st.selectbox(
