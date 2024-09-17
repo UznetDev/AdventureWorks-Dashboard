@@ -22,6 +22,7 @@ class Database:
         self.database = database
         self.reconnect(connection=True)
 
+
     def reconnect(self,err=None, retries=5, connection=False):
         """
         Reconnects to the MySQL database if the connection is lost. This function attempts to reconnect multiple times in case of failure.
@@ -66,6 +67,7 @@ class Database:
         except Exception as err:
             logging.error(err)
 
+
     def create_table_sales_per_day(self):
         """
         Creates the 'sales_per_day' table if it doesn't exist in the database.
@@ -93,6 +95,7 @@ class Database:
         except Exception as err:
             self.reconnect(err=err)
             return None
+
 
     def insert_table_sales_per_day(self):
         """
@@ -131,6 +134,7 @@ class Database:
             print(err)
             return None
 
+
     def get_total_due(self):
         """
         Fetches the total 'TotalDue' value from the 'Sales_SalesOrderHeader' table.
@@ -158,9 +162,22 @@ class Database:
             print(err)
             return None
 
-    def get_total_person(self):
+
+    def get_total_line(self):
+        """
+        Fetches the total 'LineTotal' value from the 'Sales_SalesOrderHeader' table.
+
+        Returns:
+        float: The sum of all LineTotal values in the database.
+
+        Raises:
+        mysql.connector.Error: If there is an error executing the query.
+        """
         try:
-            sql = """SELECT COUNT(*) FROM `Person_Person`"""
+            sql = """SELECT SUM(LineTotal * OrderQty )
+            FROM Sales_SalesOrderDetail sod
+                    JOIN Sales_SalesOrderHeader soh 
+                    ON sod.SalesOrderID = soh.SalesOrderID"""
             self.cursor.execute(sql)
             return self.cursor.fetchone()[0]
         except mysql.connector.Error as err:
@@ -173,9 +190,26 @@ class Database:
             print(err)
             return None
 
-    def get_total_product(self):
+
+    def get_total_person(self):
+        """
+        Retrieves the total number of persons recorded in the Person_Person table.
+
+        This function executes a simple SQL query to count the number of rows (persons)
+        in the 'Person_Person' table, which represents all the individuals stored 
+        in the database, such as employees, customers, or other contacts.
+
+        Returns:
+        - int: The total number of persons in the 'Person_Person' table.
+        - None: If an error occurs during the query execution.
+
+        Raises:
+        - mysql.connector.Error: If a MySQL error occurs, the function attempts to reconnect to the database.
+        - Exception: Catches any other exceptions that might occur during the execution and reconnects to the database.
+        """
         try:
-            sql = """SELECT COUNT(*) FROM `Production_Product`"""
+            sql = """SELECT COUNT(*) 
+                     FROM `Person_Person`"""
             self.cursor.execute(sql)
             return self.cursor.fetchone()[0]
         except mysql.connector.Error as err:
@@ -187,6 +221,40 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
+
+
+    def get_total_product(self):
+        """
+        Retrieves the total number of products recorded in the Production_Product table.
+
+        This function executes a simple SQL query to count the number of rows (products)
+        in the 'Production_Product' table, which represents all the products stored 
+        in the database, including items available for sale or manufactured by the company.
+
+        Returns:
+        - int: The total number of products in the 'Production_Product' table.
+        - None: If an error occurs during the query execution.
+
+        Raises:
+        - mysql.connector.Error: If a MySQL-specific error occurs, the function attempts to reconnect to the database.
+        - Exception: Catches any other exceptions that might occur during the execution and reconnects to the database.
+        """
+        try:
+            sql = """
+            SELECT COUNT(*) 
+            FROM `Production_Product`"""
+            self.cursor.execute(sql)
+            return self.cursor.fetchone()[0]
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            self.reconnect(err=err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+
 
     def get_total_profit(self):
         """
@@ -1628,6 +1696,56 @@ class Database:
                 sql += " WHERE " + " AND ".join(conditions)
 
             sql += " GROUP BY name ORDER BY val DESC LIMIT %s;"
+            params.append(limit)
+
+            self.cursor.execute(sql, params)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        
+
+    def get_top_sellers(self, option, year=None, limit=20):
+        """
+        Retrieves the top N salespeople by total sales, optionally filtered by year.
+
+        Parameters:
+        - year (int, optional): The year to filter by. If None, data for all years is returned.
+        - limit (int): The number of top salespeople to return. Defaults to 20.
+        - option (str): The metric to aggregate.
+
+        Returns:
+        list: A list of tuples containing seller names and their total sales.
+        """
+        try:
+            sql = f"""
+            SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, 
+            SUM({option}) AS val
+            FROM Sales_SalesOrderHeader soh
+            JOIN Sales_SalesOrderDetail sod
+            ON soh.SalesOrderID = sod.SalesOrderID
+            JOIN Sales_SalesPerson sp 
+            ON soh.SalesPersonID = sp.BusinessEntityID
+            JOIN Person_Person p 
+            ON sp.BusinessEntityID = p.BusinessEntityID
+            """
+
+            conditions = []
+            params = []
+
+            if year and year != 'All':
+                conditions.append("YEAR(soh.OrderDate) = %s")
+                params.append(year)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY name ORDER BY val LIMIT %s;"
             params.append(limit)
 
             self.cursor.execute(sql, params)

@@ -28,10 +28,11 @@ total_profit = db.get_total_profit()
 sales_count = db.get_sales_count()
 person_count = db.get_total_person()
 product_count = db.get_total_product()
+total_line = db.get_total_line()
 
 st.header(':blue[AdventureWorks] Dashboard')
 # Header
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4, col5, col6 = st.columns(6)
 
 with col1:
     text1 = '<p style="font-family:sans-serif; color:White; font-size: 15px;">Total Due: 📖 </p>'
@@ -58,6 +59,12 @@ with col4:
     st.markdown(text2, unsafe_allow_html=True)
 
 with col5:
+    text1 = '<p style="font-family:sans-serif; color:White; font-size: 15px;">Total Line: 📖 </p>'
+    text2 = f'<p style="font-family:sans-serif; color:red; font-size: 20px;">{abbreviate_number(total_line)}</p>'
+    st.markdown(text1, unsafe_allow_html=True)
+    st.markdown(text2, unsafe_allow_html=True)
+
+with col6:
     text1 = '<p style="font-family:sans-serif; color:White; font-size: 15px;">Product Count: 📖 </p>'
     text2 = f'<p style="font-family:sans-serif; color:red; font-size: 20px;">{abbreviate_number(product_count)}</p>'
     st.markdown(text1, unsafe_allow_html=True)

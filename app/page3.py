@@ -124,6 +124,9 @@ def app(option):
             st.warning('Data not available.')
             logging.error(err)
 
+
+    col1, col2, col3 = st.columns(3)
+
     with col1:
         years = db.get_years_from_sales_orders()
         years = ['All'] + [str(year[0]) for year in years]
@@ -232,6 +235,44 @@ def app(option):
                 st.plotly_chart(fig)
             else:
                 st.warning('No data available for the selected year.')
+
+    with col3:
+        years = db.get_years_from_sales_orders()
+        years = ['All'] + [str(year[0]) for year in years]
+
+        selected_year = st.selectbox('Select Year', 
+                                    years, 
+                                    key='year_selectbox_sellers')
+
+        seller_limit = st.number_input('Select number of top sellers to display', 
+                                    min_value=1, 
+                                    max_value=100, 
+                                    value=20, 
+                                    step=1)
+
+        top_sellers = db.get_top_sellers(
+            year=None if selected_year == 'All' else int(selected_year),
+            limit=seller_limit,
+            option=option
+        )
+
+        if top_sellers:
+            st.write("")
+            st.write("")
+            st.write("")
+            st.write("")
+
+            df = pd.DataFrame(top_sellers, 
+                            columns=['Seller Name', option])
+            df[option] = df[option].astype(float)
+
+            fig = px.bar(df, 
+                        y='Seller Name', 
+                        x=option, 
+                        title=f'Top {seller_limit} Sellers by Sales for {selected_year}', orientation='h')
+            st.plotly_chart(fig)
+        else:
+            st.warning('No data available for the selected year.')
 
 
 if __name__ == "__main__":
