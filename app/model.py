@@ -25,17 +25,18 @@ def app():
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        SalesOrderID = st.number_input('SalesOrderID', min_value=1)
+        SalesOrderID = 0 #st.number_input('SalesOrderID', min_value=1)
         OnlineOrderFlag = st.selectbox('OnlineOrderFlag', [0, 1])
-        SalesOrderNumber = st.number_input('SalesOrderNumber', min_value=1)
-        PurchaseOrderNumber = st.number_input('PurchaseOrderNumber', min_value=1)
+        SalesOrderNumber = 0 #st.number_input('SalesOrderNumber', min_value=1)
+        PurchaseOrderNumber = 0 #st.number_input('PurchaseOrderNumber', min_value=1)
         OrderQty = st.number_input('OrderQty', min_value=1, value=1)
+        AccountNumber = st.number_input('AccountNumber', min_value=1)
+        CustomerID = st.number_input('CustomerID', min_value=1)
+
     with col2:
         LineTotal = st.number_input('LineTotal', value=0.0)
         StandardCost = st.number_input('StandardCost', value=0.0)
         ListPrice = st.number_input('ListPrice', value=0.0)
-        CustomerID = st.number_input('CustomerID', min_value=1)
-        AccountNumber = st.number_input('AccountNumber', min_value=1)
 
     with col3:
         Color = st.selectbox('Color', options=colors)
@@ -80,10 +81,10 @@ def app():
         'ShipDate': [ShipDate],
         'OrderDate': [OrderDate]
     })
-    with col3:
+    with col2:
         if st.button('Predict TotalDue'):
             prediction = model.predict(input_data)
-            with col4:
+            with col3:
                 st.write(f'Predicted TotalDue: {prediction[0]:.2f}')
 
 
