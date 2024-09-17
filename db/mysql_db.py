@@ -326,20 +326,40 @@ class Database:
         mysql.connector.Error: If there is an error executing the query.
         """
         try:
-            sql = f"""
-                SELECT pc.Name AS CategoryName, SUM({option}) AS TotalSold
-                FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader as soh
-                USING(SalesOrderID)
-                JOIN Production_Product p 
-                USING(ProductID)
-                JOIN Production_ProductSubcategory psc
-                USING(ProductSubcategoryID)
-                JOIN Production_ProductCategory pc
-                USING(ProductCategoryID)
-                GROUP BY pc.Name
-                ORDER BY TotalSold DESC
-                """
+            if option == 'OrderQty':
+                
+                sql = f"""
+                    SELECT 
+                    pc.Name AS category, 
+                    SUM({option}) AS val
+                    FROM Sales_SalesOrderDetail sod
+                    LEFT JOIN Sales_SalesOrderHeader as soh
+                    USING(SalesOrderID)
+                    LEFT JOIN Production_Product p 
+                    USING(ProductID)
+                    LEFT JOIN Production_ProductSubcategory psc
+                    USING(ProductSubcategoryID)
+                    LEFT JOIN Production_ProductCategory pc
+                    USING(ProductCategoryID)
+                    GROUP BY category
+                    ORDER BY val DESC
+                    """
+            else:
+                sql = f"""
+                    SELECT 
+                    pc.Name AS category, 
+                    SUM({option} * OrderQty) AS val
+                    FROM Sales_SalesOrderDetail sod
+                    JOIN Sales_SalesOrderHeader as soh
+                    USING(SalesOrderID)
+                    JOIN Production_Product p 
+                    USING(ProductID)
+                    JOIN Production_ProductSubcategory psc
+                    USING(ProductSubcategoryID)
+                    JOIN Production_ProductCategory pc
+                    USING(ProductCategoryID)
+                    GROUP BY category
+                    ORDER BY val DESC"""
             self.cursor.execute(sql)
             return self.cursor.fetchall()
         except mysql.connector.Error as err:
