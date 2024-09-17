@@ -58,7 +58,7 @@ def app(option):
 
                 fig.update_layout(
                     xaxis_title="Territory",
-                    yaxis_title="Total Sold",
+                    yaxis_title=option,
                     barmode='stack',
                     coloraxis_colorbar=dict(
                         title="Product Territory"
@@ -83,7 +83,7 @@ def app(option):
                             text=option)
 
                 fig.update_layout(
-                    xaxis_title="Total Sold",
+                    xaxis_title=option,
                     yaxis_title="Region",
                     barmode='stack',
                     coloraxis_colorbar=dict(

@@ -109,7 +109,7 @@ MYSQL_DATABASE= <your MySQL database>
         
      if __name__ == "__main__":
         script_path = " <PATH DIRECTORY> /AdventureWorks-Dashboard/🏠_Home.py"
-        sys.argv = ["streamlit", "run", script_path, "--server.port", "< port >"]
+        sys.argv = ["streamlit", "run", script_path, "--server.port", "1003"]
         stcli.main()
     ```
 
@@ -125,7 +125,7 @@ MYSQL_DATABASE= <your MySQL database>
    streamlit run app.py
    ```
 
-The app should now be running on `http://localhost:8501/`.
+The app should now be running on `http://localhost:1003/`.
 
 
 
@@ -147,8 +147,7 @@ AdventureWorks-Dashboard/
 ├── function/                            # Python functions for data manipulation
 │   └── function.py                      # Core bot functionalities
 │
-├── pages/                               # Power BI dashboard pages
-│   └── 🏂_Prediction.py.pbix            # 🏂_Prediction page script
+├── app/                                 # aplication Page
 │
 ├── model.pkl                            # Pretrained machine learning model (if applicable)
 └── 🏠_Home.py                           # Main script for 🏠 Home page
