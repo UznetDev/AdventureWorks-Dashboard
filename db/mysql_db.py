@@ -1387,9 +1387,12 @@ class Database:
             SELECT psc.Name AS Subcategory, 
             SUM({option}) AS val
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-            JOIN Production_Product p ON sod.ProductID = p.ProductID
-            JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            JOIN Sales_SalesOrderHeader soh 
+            ON sod.SalesOrderID = soh.SalesOrderID
+            JOIN Production_Product p 
+            ON sod.ProductID = p.ProductID
+            JOIN Production_ProductSubcategory psc 
+            ON p.ProductSubcategoryID = psc.ProductSubcategoryID
             """
 
             conditions = []

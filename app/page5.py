@@ -63,12 +63,16 @@ def app(option):
                 )
 
                 if vendor_category_data:
-                    df_vendor = pd.DataFrame(vendor_category_data, columns=['VendorName', 'CategoryName', 'MetricValue'])
-                    df_vendor['MetricValue'] = df_vendor['MetricValue'].astype(float)
-                    values_column = 'MetricValue'
+                    df_vendor = pd.DataFrame(vendor_category_data, columns=['VendorName', 
+                                                                            'CategoryName', 
+                                                                            option])
+                    df_vendor[option] = df_vendor[option].astype(float)
                     title = f"{option} by Vendor and Category for {selected_year}"
 
-                    fig_vendor = px.bar(df_vendor, x='VendorName', y=values_column, color='CategoryName', title=title)
+                    fig_vendor = px.bar(df_vendor, x='VendorName', 
+                                        y=option, 
+                                        color='CategoryName', 
+                                        title=title)
                     fig_vendor.update_layout(
                         xaxis_title='Vendor',
                         yaxis_title=option,
@@ -85,9 +89,9 @@ def app(option):
                 )
 
                 if vendor_data:
-                    df_vendor = pd.DataFrame(vendor_data, columns=['VendorName', 'MetricValue'])
-                    df_vendor['MetricValue'] = df_vendor['MetricValue'].astype(float)
-                    values_column = 'MetricValue'
+                    df_vendor = pd.DataFrame(vendor_data, columns=['VendorName', option])
+                    df_vendor[option] = df_vendor[option].astype(float)
+                    values_column = option
                     title = f"{option} by Vendor for {selected_year}"
 
                     fig_vendor = px.bar(df_vendor, x='VendorName', y=values_column, title=title)
