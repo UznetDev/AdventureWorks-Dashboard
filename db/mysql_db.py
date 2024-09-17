@@ -1210,3 +1210,211 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
+        
+        
+    def get_color_distribution(self, metric='TotalRevenue', location=None, category=None, year=None):
+        """
+        Retrieves the distribution of the specified metric by Product Color,
+        optionally filtered by location, category, and year.
+
+        Parameters:
+        - metric (str): The metric to aggregate ('TotalRevenue' or 'OrderCount').
+        - location (str, optional): The name of the location to filter by. Defaults to None.
+        - category (str, optional): The name of the product category to filter by. Defaults to None.
+        - year (int, optional): The year to filter by. Defaults to None.
+
+        Returns:
+        list: A list of tuples containing Product Colors and aggregated values for the specified metric.
+
+        Raises:
+        mysql.connector.Error: If there is an error executing the query.
+        """
+        try:
+            if metric == 'TotalRevenue':
+                sql = """
+                SELECT IFNULL(p.Color, 'No Color') AS Color, SUM(sod.LineTotal) AS TotalRevenue
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                """
+                order_by_column = "TotalRevenue"
+            elif metric == 'OrderCount':
+                sql = """
+                SELECT IFNULL(p.Color, 'No Color') AS Color, COUNT(*) AS OrderCount
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                """
+                order_by_column = "OrderCount"
+            else:
+                sql = """
+                SELECT IFNULL(p.Color, 'No Color') AS Color, SUM(sod.LineTotal) AS TotalRevenue
+                FROM Sales_SalesOrderDetail sod
+                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                """
+                order_by_column = "TotalRevenue"
+
+            conditions = []
+            params = []
+
+            if location and location != 'All':
+                conditions.append("st.Name = %s")
+                params.append(location)
+
+            if category and category != 'All':
+                conditions.append("pc.Name = %s")
+                params.append(category)
+
+            if year and year != 'All':
+                conditions.append("YEAR(soh.OrderDate) = %s")
+                params.append(year)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += f" GROUP BY p.Color ORDER BY {order_by_column} DESC;"
+
+            self.cursor.execute(sql, params)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+
+            
+
+    def get_vendor_purchases(self, option='TotalDue', year=None):
+        """
+        Retrieves the specified metric by Vendor,
+        optionally filtered by year.
+
+        Parameters:
+        - option (str): The metric to aggregate (e.g., 'TotalDue', 'OrderQty', etc.).
+        - year (int, optional): The year to filter by. If None, data for all years is returned.
+
+        Returns:
+        list: A list of tuples containing VendorName and aggregated metric values.
+
+        Raises:
+        mysql.connector.Error: If there is an error executing the query.
+        """
+        try:
+            sql = f"""
+            SELECT v.Name AS VendorName, 
+                SUM({option}) AS MetricValue
+            FROM Purchasing_PurchaseOrderHeader poh
+            JOIN Purchasing_PurchaseOrderDetail pod ON poh.PurchaseOrderID = pod.PurchaseOrderID
+            JOIN Purchasing_Vendor v ON poh.VendorID = v.BusinessEntityID
+            """
+
+            conditions = []
+            params = []
+
+            if year and year != 'All':
+                conditions.append("YEAR(poh.OrderDate) = %s")
+                params.append(year)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY v.Name ORDER BY MetricValue DESC;"
+
+            self.cursor.execute(sql, params)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+
+
+
+
+    def get_vendor_purchases_by_category(self, option='TotalDue', year=None):
+        """
+        Retrieves the specified metric by Vendor and Category,
+        optionally filtered by year.
+
+        Parameters:
+        - option (str): The metric to aggregate (e.g., 'TotalDue', 'OrderQty', etc.).
+        - year (int, optional): The year to filter by. If None, data for all years is returned.
+
+        Returns:
+        list: A list of tuples containing VendorName, CategoryName, and aggregated metric values.
+
+        Raises:
+        mysql.connector.Error: If there is an error executing the query.
+        """
+        try:
+            sql = f"""
+            SELECT v.Name AS VendorName, 
+                IFNULL(pc.Name, 'No Category') AS CategoryName, 
+                SUM({option}) AS MetricValue
+            FROM Purchasing_PurchaseOrderHeader poh
+            JOIN Purchasing_PurchaseOrderDetail pod ON poh.PurchaseOrderID = pod.PurchaseOrderID
+            JOIN Purchasing_Vendor v ON poh.VendorID = v.BusinessEntityID
+            JOIN Production_Product p ON pod.ProductID = p.ProductID
+            LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+            """
+
+            conditions = []
+            params = []
+
+            if year and year != 'All':
+                conditions.append("YEAR(poh.OrderDate) = %s")
+                params.append(year)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY v.Name, CategoryName ORDER BY MetricValue DESC;"
+
+            self.cursor.execute(sql, params)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+
+
+    def get_years_from_purchase_orders(self):
+        """
+        Retrieves distinct years from the Purchasing_PurchaseOrderHeader table.
+
+        Returns:
+        list: A list of years.
+        """
+        try:
+            sql = "SELECT DISTINCT YEAR(OrderDate) AS Year FROM Purchasing_PurchaseOrderHeader ORDER BY Year;"
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return []
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return []
