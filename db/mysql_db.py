@@ -1187,7 +1187,6 @@ class Database:
             print(err)
             return None
         
-
     def get_color_distribution(self, option, location=None, category=None, year=None):
         """
         Retrieves the distribution of the specified metric by Product Color,
@@ -1248,8 +1247,6 @@ class Database:
             print(err)
             return None
 
-            
-
     def get_vendor_purchases(self, option='TotalDue', year=None):
         """
         Retrieves the specified metric by Vendor,
@@ -1296,9 +1293,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
-
-
 
     def get_vendor_purchases_by_category(self, option='TotalDue', year=None):
         """
@@ -1350,7 +1344,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_years_from_purchase_orders(self):
         """
@@ -1516,8 +1509,7 @@ class Database:
             print(err)
             return None
 
-
-    def get_top_customers(self, year=None, limit=20):
+    def get_top_customers(self, option, year=None, limit=20):
         """
         Retrieves the top N customers by total sales, optionally filtered by year.
 
@@ -1529,9 +1521,12 @@ class Database:
         list: A list of tuples containing customer names and their total sales.
         """
         try:
-            sql = """
-            SELECT p.FirstName, p.LastName, SUM(soh.TotalDue) AS TotalSales
+            sql = f"""
+            SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, 
+            SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
+            JOIN Sales_SalesOrderDetail sod
+            ON sod.SalesOrderID = soh.SalesOrderID
             JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
             JOIN Person_Person p ON c.PersonID = p.BusinessEntityID
             """
@@ -1546,7 +1541,7 @@ class Database:
             if conditions:
                 sql += " WHERE " + " AND ".join(conditions)
 
-            sql += " GROUP BY p.FirstName, p.LastName ORDER BY TotalSales DESC LIMIT %s;"
+            sql += " GROUP BY name ORDER BY val DESC LIMIT %s;"
             params.append(limit)
 
             self.cursor.execute(sql, params)
@@ -1594,6 +1589,51 @@ class Database:
                 sql += " WHERE " + " AND ".join(conditions)
 
             sql += " GROUP BY p.FirstName, p.LastName, pc.Name ORDER BY TotalSales DESC LIMIT %s;"
+            params.append(limit)
+
+            self.cursor.execute(sql, params)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+
+
+    def get_top_customers2(self, option, year=None, limit=20):
+        """
+        Retrieves the top N customers by total sales, optionally filtered by year.
+
+        Parameters:
+        - year (int, optional): The year to filter by. If None, data for all years is returned.
+        - limit (int): The number of top customers to return. Defaults to 20.
+
+        Returns:
+        list: A list of tuples containing customer names and their total sales.
+        """
+        try:
+            sql = """
+            SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, 
+            SUM(soh.TotalDue) AS val
+            FROM Sales_SalesOrderHeader soh
+            JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
+            JOIN Person_Person p ON c.PersonID = p.BusinessEntityID
+            """
+
+            conditions = []
+            params = []
+
+            if year and year != 'All':
+                conditions.append("YEAR(soh.OrderDate) = %s")
+                params.append(year)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY name ORDER BY val DESC LIMIT %s;"
             params.append(limit)
 
             self.cursor.execute(sql, params)

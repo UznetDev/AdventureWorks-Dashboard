@@ -149,7 +149,9 @@ def app(option):
                 fig = px.bar(df_store_category, x=option, y='StoreName', color='CategoryName', 
                             title=f'Top {store_limit} Stores by Sales with Category Breakdown for {selected_year}', 
                             orientation='h')
-                fig.update_layout(xaxis_title='Total Sales', yaxis_title='Store Name', barmode='stack')
+                fig.update_layout(xaxis_title='Total Sales', 
+                                  yaxis_title='Store Name', 
+                                  barmode='stack')
 
                 st.plotly_chart(fig)
             else:
@@ -187,12 +189,12 @@ def app(option):
             )
 
             if customer_category_data:
-                df_customer_category = pd.DataFrame(customer_category_data, columns=['FirstName', 'LastName', 'CategoryName', 'TotalSales'])
-                df_customer_category['TotalSales'] = df_customer_category['TotalSales'].astype(float)
+                df_customer_category = pd.DataFrame(customer_category_data, columns=['FirstName', 'LastName', 'CategoryName', option])
+                df_customer_category[option] = df_customer_category[option].astype(float)
 
                 df_customer_category['CustomerName'] = df_customer_category['FirstName'] + " " + df_customer_category['LastName']
 
-                fig = px.bar(df_customer_category, x='TotalSales', y='CustomerName', color='CategoryName', 
+                fig = px.bar(df_customer_category, x=option, y='CustomerName', color='CategoryName', 
                             title=f'Top {customer_limit} Customers by Sales with Category Breakdown for {selected_year}', 
                             orientation='h')
 
@@ -204,16 +206,19 @@ def app(option):
         else:
             top_customers = db.get_top_customers(
                 year=None if selected_year == 'All' else int(selected_year),
-                limit=customer_limit
+                limit=customer_limit,
+                option=option
             )
 
             if top_customers:
-                df_customers = pd.DataFrame(top_customers, columns=['FirstName', 'LastName', 'TotalSales'])
-                df_customers['TotalSales'] = df_customers['TotalSales'].astype(float)
+                df = pd.DataFrame(top_customers, columns=['name', option])
+                df[option] = df[option].astype(float)
 
-                df_customers['CustomerName'] = df_customers['FirstName'] + " " + df_customers['LastName']
 
-                fig = px.bar(df_customers, y='CustomerName', x='TotalSales', title=f'Top {customer_limit} Customers by Sales for {selected_year}', orientation='h')
+                fig = px.bar(df, 
+                             y='name',
+                             x=option, 
+                             title=f'Top {customer_limit} Customers by Sales for {selected_year}', orientation='h')
 
                 st.plotly_chart(fig)
             else:

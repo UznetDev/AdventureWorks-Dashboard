@@ -117,6 +117,7 @@ def app(option):
         df_subcategory[option] = df_subcategory[option].astype(float)
         fig = px.bar(df_subcategory, x='Subcategory', 
                      y=option, 
+                     color=option,
                      title=f'Sales by Product Subcategory for {selected_year}')
         fig.update_layout(xaxis_title='Product Subcategory', 
                           yaxis_title='Total Sales', 

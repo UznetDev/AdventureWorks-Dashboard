@@ -36,7 +36,10 @@ def app(option):
                 df = pd.DataFrame(color_data, columns=['Color', option])
                 df[option] = df[option].astype(float)
                 title = f'{option} by Product Color for {selected_year}'
-                fig = px.pie(df, names='Color', values=option, title=title, hole=0.4)
+                fig = px.pie(df, names='Color',
+                             values=option, 
+                             title=title, 
+                             hole=0.4)
                 fig.update_traces(pull=[0.04, 0.06, 0.08, 0.1],
                                 textinfo='percent+label',
                                 marker=dict(line=dict(color='white', width=2)))
@@ -69,8 +72,10 @@ def app(option):
                     df_vendor[option] = df_vendor[option].astype(float)
                     title = f"{option} by Vendor and Category for {selected_year}"
 
-                    fig_vendor = px.bar(df_vendor, x='VendorName', 
+                    fig_vendor = px.bar(df_vendor, 
+                                        x='VendorName', 
                                         y=option, 
+                                        color=option,
                                         color='CategoryName', 
                                         title=title)
                     fig_vendor.update_layout(
@@ -94,7 +99,11 @@ def app(option):
                     values_column = option
                     title = f"{option} by Vendor for {selected_year}"
 
-                    fig_vendor = px.bar(df_vendor, x='VendorName', y=values_column, title=title)
+                    fig_vendor = px.bar(df_vendor, 
+                                        x='VendorName', 
+                                        y=values_column, 
+                                        color=option,
+                                        title=title)
                     fig_vendor.update_layout(
                         xaxis_title='Vendor',
                         yaxis_title=option,
