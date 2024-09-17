@@ -10,6 +10,7 @@ from function.function import *
 
 def app(option):
     # Part 1
+
     text = 'You can get information here about the market share of each category,\
         sales in each territory, and products in each region.'
     st.write_stream(write_stream_text(text, 0.1))
@@ -45,25 +46,39 @@ def app(option):
 
     with col2:
         try:
+            show_category_breakdown = st.checkbox('Show Category Breakdown', key='category_breakdown_checkbox')
             by_tretory = db.get_sales_by_territory(option)
+            df = pd.DataFrame(by_tretory, columns=['Territory', 'Category', option])
+            title = 'Sold Territory'
             if by_tretory:
-                df = pd.DataFrame(by_tretory, columns=['Territory', 'Category', option])
-                fig = px.bar(df, x='Territory', y=option, color='Category', 
-                            title='Sold Territory', 
-                            labels={option: option, 'Category': 'Product Category'},
-                            orientation='v',
-                            text=option
-                            )
-
-                fig.update_layout(
-                    xaxis_title="Territory",
-                    yaxis_title="Total Sold",
-                    barmode='stack',
-                    coloraxis_colorbar=dict(
-                        title="Product Territory"
+                if show_category_breakdown:
+                    fig = px.bar(df, x='Territory', y=option, color='Category', 
+                                title=title, 
+                                labels={option: option, 'Category': 'Product Category'},
+                                orientation='v',
+                                text=option
+                                )
+                    fig.update_layout(
+                        xaxis_title="Territory",
+                        yaxis_title="Total Sold",
+                        barmode='stack',
+                        coloraxis_colorbar=dict(
+                            title="Product Territory"
+                        )
                     )
-                )
-                st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True)
+
+                else:
+                    fig = px.bar(df.drop(columns=['Category']).copy(), x='Territory',
+                                y=option, title=title
+                                )
+                    # fig_vendor.update_layout(
+                    #     xaxis_title='Vendor',
+                    #     yaxis_title=option,
+                    #     xaxis_tickangle=-45
+                    # )
+                    st.plotly_chart(fig)
+
             else:
                 st.warning('Data not available.')  
         except Exception as err:
