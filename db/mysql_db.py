@@ -1159,3 +1159,54 @@ class Database:
             return None
 
 
+    def get_color(self):
+        """
+        Fetches a list of distinct product color from the database.
+
+        Returns:
+        list: A list of unique product category names.
+
+        Raises:
+        mysql.connector.Error: If there is an error executing the query.
+        """
+        try:
+            sql = "SELECT DISTINCT CASE WHEN color IS NULL THEN 'Unknown' ELSE color END FROM `Production_Product`"
+            self.cursor.execute(sql)
+            result = self.cursor.fetchall()
+            categories = [row[0] for row in result]
+            return categories
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            self.reconnect(err=err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        
+    def get_ship_method(self):
+        """
+        Fetches a list of distinct product ShipMethod from the database.
+
+        Returns:
+        list: A list of unique product category names.
+
+        Raises:
+        mysql.connector.Error: If there is an error executing the query.
+        """
+        try:
+            sql = "SELECT DISTINCT Name FROM `Purchasing_ShipMethod`"
+            self.cursor.execute(sql)
+            result = self.cursor.fetchall()
+            categories = [row[0] for row in result]
+            return categories
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            self.reconnect(err=err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
