@@ -146,10 +146,11 @@ class Database:
         mysql.connector.Error: If there is an error executing the query.
         """
         try:
-            sql = """SELECT SUM(TotalDue * OrderQty )
+            sql = """
+            SELECT SUM(TotalDue * OrderQty )
             FROM Sales_SalesOrderDetail sod
-                    JOIN Sales_SalesOrderHeader soh 
-                    ON sod.SalesOrderID = soh.SalesOrderID"""
+            JOIN Sales_SalesOrderHeader soh 
+            ON sod.SalesOrderID = soh.SalesOrderID"""
             self.cursor.execute(sql)
             return self.cursor.fetchone()[0]
         except mysql.connector.Error as err:
@@ -174,10 +175,11 @@ class Database:
         mysql.connector.Error: If there is an error executing the query.
         """
         try:
-            sql = """SELECT SUM(LineTotal * OrderQty )
+            sql = """
+            SELECT SUM(LineTotal * OrderQty )
             FROM Sales_SalesOrderDetail sod
-                    JOIN Sales_SalesOrderHeader soh 
-                    ON sod.SalesOrderID = soh.SalesOrderID"""
+            JOIN Sales_SalesOrderHeader soh 
+            ON sod.SalesOrderID = soh.SalesOrderID"""
             self.cursor.execute(sql)
             return self.cursor.fetchone()[0]
         except mysql.connector.Error as err:
@@ -296,7 +298,8 @@ class Database:
         mysql.connector.Error: If there is an error executing the query.
         """
         try:
-            sql = """SELECT COUNT(*) FROM Sales_SalesOrderHeader"""
+            sql = """SELECT COUNT(*) 
+            FROM Sales_SalesOrderHeader"""
             self.cursor.execute(sql)
             return self.cursor.fetchone()[0]
         except mysql.connector.Error as err:
@@ -1474,14 +1477,17 @@ class Database:
             print(err)
             return []
 
-    def get_top_sales_stores(self, year=None, limit=20):
+    def get_top_sales_stores(self, option, year=None, limit=20):
         """
         Retrieves the top N stores by total sales, optionally filtered by year.
         """
         try:
-            sql = """
-            SELECT s.Name AS StoreName, SUM(soh.TotalDue) AS TotalSales
+            sql = f"""
+            SELECT s.Name AS StoreName, 
+            SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
+            JOIN Sales_SalesOrderDetail sod 
+            ON soh.SalesOrderID = sod.SalesOrderID
             JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
             JOIN Sales_Store s ON c.StoreID = s.BusinessEntityID
             """
@@ -1496,7 +1502,7 @@ class Database:
             if conditions:
                 sql += " WHERE " + " AND ".join(conditions)
 
-            sql += " GROUP BY s.Name ORDER BY TotalSales DESC LIMIT %s;"
+            sql += " GROUP BY s.Name ORDER BY val DESC LIMIT %s;"
             params.append(limit)
 
             self.cursor.execute(sql, params)
@@ -1659,51 +1665,56 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
+        
 
-    def get_top_customers2(self, option, year=None, limit=20):
+    def get_category_sellers_breakdown(self, option, year=None, limit=20):
         """
-        Retrieves the top N customers by total sales, optionally filtered by year.
-
+        Retrieves the category breakdown for each seller's sales.
+        
         Parameters:
+        - option (str): The metric to aggregate (e.g., 'TotalDue', 'OrderQty').
         - year (int, optional): The year to filter by. If None, data for all years is returned.
-        - limit (int): The number of top customers to return. Defaults to 20.
-        - option (str): The metric to aggregate
+        - limit (int): The number of top sellers to return. Defaults to 20.
 
         Returns:
-        list: A list of tuples containing customer names and their total sales.
+        list: A list of tuples containing seller names, category names, and their aggregated sales.
         """
         try:
             sql = f"""
             SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, 
-            SUM({option}) AS val
+                pc.Name AS category,
+                SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
             JOIN Sales_SalesOrderDetail sod 
             ON soh.SalesOrderID = sod.SalesOrderID
-            JOIN Sales_Customer c 
-            ON soh.CustomerID = c.CustomerID
+            JOIN Sales_SalesPerson sp 
+            ON soh.SalesPersonID = sp.BusinessEntityID
             JOIN Person_Person p 
-            ON c.PersonID = p.BusinessEntityID
+            ON sp.BusinessEntityID = p.BusinessEntityID
+            JOIN Production_Product pr 
+            ON sod.ProductID = pr.ProductID
+            JOIN Production_ProductSubcategory psc 
+            ON pr.ProductSubcategoryID = psc.ProductSubcategoryID
+            JOIN Production_ProductCategory pc 
+            ON psc.ProductCategoryID = pc.ProductCategoryID
             """
 
             conditions = []
             params = []
-
             if year and year != 'All':
                 conditions.append("YEAR(soh.OrderDate) = %s")
                 params.append(year)
-
             if conditions:
                 sql += " WHERE " + " AND ".join(conditions)
-
-            sql += " GROUP BY name ORDER BY val DESC LIMIT %s;"
-            params.append(limit)
-
+            sql += f" GROUP BY name, category ORDER BY val DESC LIMIT {limit};"
             self.cursor.execute(sql, params)
             return self.cursor.fetchall()
+
         except mysql.connector.Error as err:
             self.reconnect(err=err)
             print(err)
             return None
+
         except Exception as err:
             self.reconnect(err=err)
             print(err)
@@ -1715,46 +1726,39 @@ class Database:
         Retrieves the top N salespeople by total sales, optionally filtered by year.
 
         Parameters:
+        - option (str): The metric to aggregate (e.g., 'TotalDue', 'OrderQty').
         - year (int, optional): The year to filter by. If None, data for all years is returned.
         - limit (int): The number of top salespeople to return. Defaults to 20.
-        - option (str): The metric to aggregate.
 
         Returns:
-        list: A list of tuples containing seller names and their total sales.
+        list: A list of tuples containing seller names and their aggregated value.
         """
         try:
             sql = f"""
             SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, 
-            SUM({option}) AS val
+                   SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
-            JOIN Sales_SalesOrderDetail sod
-            ON soh.SalesOrderID = sod.SalesOrderID
-            JOIN Sales_SalesPerson sp 
-            ON soh.SalesPersonID = sp.BusinessEntityID
-            JOIN Person_Person p 
-            ON sp.BusinessEntityID = p.BusinessEntityID
+            JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+            JOIN Sales_SalesPerson sp ON soh.SalesPersonID = sp.BusinessEntityID
+            JOIN Person_Person p ON sp.BusinessEntityID = p.BusinessEntityID
             """
 
             conditions = []
             params = []
-
             if year and year != 'All':
                 conditions.append("YEAR(soh.OrderDate) = %s")
                 params.append(year)
 
             if conditions:
                 sql += " WHERE " + " AND ".join(conditions)
-
-            sql += " GROUP BY name ORDER BY val LIMIT %s;"
-            params.append(limit)
-
+            sql += f" GROUP BY name ORDER BY val DESC LIMIT {limit};"
             self.cursor.execute(sql, params)
             return self.cursor.fetchall()
         except mysql.connector.Error as err:
             self.reconnect(err=err)
-            print(err)
+            logging.error(f"Error fetching top sellers: {err}")
             return None
         except Exception as err:
             self.reconnect(err=err)
-            print(err)
+            logging.error(f"Unexpected error: {err}")
             return None

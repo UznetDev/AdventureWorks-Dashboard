@@ -41,54 +41,54 @@ def normalize_data(df, value_column, start=-1, end=1, new_column=None, response=
     return df
 
 
-
-def make_donut(input_response, input_text, input_color=None):
-    
-    if input_color is None:
-        input_color = 'orange' if input_response >= 0 else 'red'
-
-    if input_color == 'blue':
-        chart_color = ['#29b5e8', '#155F7A']
-    elif input_color == 'green':
-        chart_color = ['#27AE60', '#12783D']
-    elif input_color == 'orange':
-        chart_color = ['#F39C12', '#875A12']
-    elif input_color == 'red':
-        chart_color = ['#E74C3C', '#781F16']
-
-    source = pd.DataFrame({
-        "Topic": ['', input_text],
-        "% value": [100 - input_response, input_response]
-    })
-    source_bg = pd.DataFrame({
-        "Topic": ['', input_text],
-        "% value": [100, 0]
-    })
-
-    plot = alt.Chart(source).mark_arc(innerRadius=45, cornerRadius=15).encode(
-        theta="% value",
-        color=alt.Color("Topic:N",
-                        scale=alt.Scale(
-                            domain=[input_text, ''],
-                            range=chart_color),
-                        legend=None),
-    ).properties(width=230, height=230)
-
-    text = plot.mark_text(align='center', color=chart_color[0], 
-                          font="Lato", 
-                          fontSize=20, 
-                          fontWeight=100, 
-                          fontStyle="italic").encode(text=alt.value(f'{input_response} %'))
-    plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=45, cornerRadius=20).encode(
-        theta="% value",
-        color=alt.Color("Topic:N",
-                        scale=alt.Scale(
-                            domain=[input_text, ''],
-                            range=chart_color),
-                        legend=None),
-    ).properties(width=230, height=230)
-    
-    return plot_bg + plot + text
+#
+# def make_donut(input_response, input_text, input_color=None):
+#
+#     if input_color is None:
+#         input_color = 'orange' if input_response >= 0 else 'red'
+#
+#     if input_color == 'blue':
+#         chart_color = ['#29b5e8', '#155F7A']
+#     elif input_color == 'green':
+#         chart_color = ['#27AE60', '#12783D']
+#     elif input_color == 'orange':
+#         chart_color = ['#F39C12', '#875A12']
+#     elif input_color == 'red':
+#         chart_color = ['#E74C3C', '#781F16']
+#
+#     source = pd.DataFrame({
+#         "Topic": ['', input_text],
+#         "% value": [100 - input_response, input_response]
+#     })
+#     source_bg = pd.DataFrame({
+#         "Topic": ['', input_text],
+#         "% value": [100, 0]
+#     })
+#
+#     plot = alt.Chart(source).mark_arc(innerRadius=45, cornerRadius=15).encode(
+#         theta="% value",
+#         color=alt.Color("Topic:N",
+#                         scale=alt.Scale(
+#                             domain=[input_text, ''],
+#                             range=chart_color),
+#                         legend=None),
+#     ).properties(width=230, height=230)
+#
+#     text = plot.mark_text(align='center', color=chart_color[0],
+#                           font="Lato",
+#                           fontSize=20,
+#                           fontWeight=100,
+#                           fontStyle="italic").encode(text=alt.value(f'{input_response} %'))
+#     plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=45, cornerRadius=20).encode(
+#         theta="% value",
+#         color=alt.Color("Topic:N",
+#                         scale=alt.Scale(
+#                             domain=[input_text, ''],
+#                             range=chart_color),
+#                         legend=None),
+#     ).properties(width=230, height=230)
+#
+#     return plot_bg + plot + text
 
 
 def write_stream_text(text, sped=0.02):
@@ -97,17 +97,17 @@ def write_stream_text(text, sped=0.02):
         time.sleep(sped)
 
 
-def make_heatmap(input_df, input_y, input_x, input_color, input_color_theme):
-    heatmap = alt.Chart(input_df, width=200).mark_rect().encode(
-            y=alt.Y(f'{input_y}:O', axis=alt.Axis(title="Year", titleFontSize=18, titlePadding=15, titleFontWeight=900, labelAngle=0)),
-            x=alt.X(f'{input_x}:O', axis=alt.Axis(title="", titleFontSize=18, titlePadding=15, titleFontWeight=900)),
-            color=alt.Color(f'max({input_color}):Q',
-                             legend=None,
-                             scale=alt.Scale(scheme=input_color_theme)),
-            stroke=alt.value('black'),
-            strokeWidth=alt.value(0.25),
-        ).properties(width=300
-        ).configure_axis(
-        labelFontSize=12,
-        titleFontSize=12)
-    return heatmap
+# def make_heatmap(input_df, input_y, input_x, input_color, input_color_theme):
+#     heatmap = alt.Chart(input_df, width=200).mark_rect().encode(
+#             y=alt.Y(f'{input_y}:O', axis=alt.Axis(title="Year", titleFontSize=18, titlePadding=15, titleFontWeight=900, labelAngle=0)),
+#             x=alt.X(f'{input_x}:O', axis=alt.Axis(title="", titleFontSize=18, titlePadding=15, titleFontWeight=900)),
+#             color=alt.Color(f'max({input_color}):Q',
+#                              legend=None,
+#                              scale=alt.Scale(scheme=input_color_theme)),
+#             stroke=alt.value('black'),
+#             strokeWidth=alt.value(0.25),
+#         ).properties(width=300
+#         ).configure_axis(
+#         labelFontSize=12,
+#         titleFontSize=12)
+#     return heatmap

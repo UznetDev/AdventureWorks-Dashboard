@@ -135,9 +135,9 @@ def app(option):
 
         store_limit = st.number_input('Select number of top stores to display', min_value=1, max_value=100, value=20, step=1)
 
-        show_category_breakdown = st.checkbox('Show Category Breakdown', key='category_breakdown_checkbox')
+        show = st.checkbox('Show Category Breakdown', key='category_breakdown_checkbox')
 
-        if show_category_breakdown:
+        if show:
             store_category_data = db.get_top_sales_stores_with_categories(
                 year=None if selected_year == 'All' else int(selected_year),
                 limit=store_limit,
@@ -161,7 +161,8 @@ def app(option):
         else:
             top_stores = db.get_top_sales_stores(
                 year=None if selected_year == 'All' else int(selected_year),
-                limit=store_limit
+                limit=store_limit,
+                option=option
             )
             if top_stores:
                 df_stores = pd.DataFrame(top_stores, columns=['StoreName', option])
@@ -188,10 +189,10 @@ def app(option):
                                         value=20,
                                         step=1)
 
-        show_category_breakdown = st.checkbox('Show Category Breakdown', 
+        show = st.checkbox('Show Category Breakdown', 
                                               key='category_breakdown_checkbox_customers')
 
-        if show_category_breakdown:
+        if show:
             customer_category_data = db.get_top_customers_with_categories(
                 year=None if selected_year == 'All' else int(selected_year),
                 limit=customer_limit,
@@ -239,40 +240,46 @@ def app(option):
     with col3:
         years = db.get_years_from_sales_orders()
         years = ['All'] + [str(year[0]) for year in years]
+        selected_year = st.selectbox('Select Year', years)
 
-        selected_year = st.selectbox('Select Year', 
-                                    years, 
-                                    key='year_selectbox_sellers')
+        if selected_year == 'All':
+            selected_year = None
 
-        seller_limit = st.number_input('Select number of top sellers to display', 
-                                    min_value=1, 
-                                    max_value=100, 
-                                    value=20, 
-                                    step=1)
+        seller_limit = st.number_input('Select number of top sellers to display', min_value=1, max_value=100, value=20, step=1)
 
-        top_sellers = db.get_top_sellers(
-            year=None if selected_year == 'All' else int(selected_year),
-            limit=seller_limit,
-            option=option
-        )
+        show = st.checkbox('Show Category Breakdown')
 
-        if top_sellers:
-            st.write("")
-            st.write("")
-            st.write("")
-            st.write("")
 
-            df = pd.DataFrame(top_sellers, 
-                            columns=['Seller Name', option])
-            df[option] = df[option].astype(float)
-
-            fig = px.bar(df, 
-                        y='Seller Name', 
-                        x=option, 
-                        title=f'Top {seller_limit} Sellers by Sales for {selected_year}', orientation='h')
-            st.plotly_chart(fig)
+        if show:
+            data = db.get_category_sellers_breakdown(option=option, 
+                                                    year=selected_year, 
+                                                    limit=seller_limit)
+            if data:
+                df = pd.DataFrame(data, 
+                                columns=['Seller Name', 'Category', 'CategorySales'])
+                fig = px.bar(df, 
+                            x='CategorySales', 
+                            y='Seller Name', 
+                            color='Category', 
+                            title=f'Top {seller_limit} Sellers by {option} with Category Breakdown for {selected_year or "All Years"}',
+                            orientation='h')
+                fig.update_layout(barmode='stack', 
+                                  xaxis_title=option, 
+                                  yaxis_title='Seller Name')
+                st.plotly_chart(fig)
+            else:
+                st.warning('No data available for the selected year.')
         else:
-            st.warning('No data available for the selected year.')
+            top_sellers = db.get_top_sellers(option=option, year=selected_year, limit=seller_limit)
+            if top_sellers:
+                df = pd.DataFrame(top_sellers, columns=['Seller Name', option])
+                df[option] = df[option].astype(float)
+                fig = px.bar(df, y='Seller Name', x=option, 
+                            title=f'Top {seller_limit} Sellers by {option} for {selected_year or "All Years"}', 
+                            orientation='h')
+                st.plotly_chart(fig)
+            else:
+                st.warning('No data available for the selected year.')
 
 
 if __name__ == "__main__":
