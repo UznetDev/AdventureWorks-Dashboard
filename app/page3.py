@@ -113,7 +113,7 @@ def app(option):
                                             color_continuous_scale=px.colors.cyclical.IceFire,
                                             size_max=40,
                                             zoom=3, 
-                                            height=550)
+                                            height=618)
 
                 fig.update_layout(mapbox_style="open-street-map")
                 fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
@@ -125,6 +125,99 @@ def app(option):
             logging.error(err)
 
 
+    with col1:
+        years = db.get_years_from_sales_orders()
+        years = ['All'] + [str(year[0]) for year in years]
+
+        selected_year = st.selectbox('Select Year', years, key='year_selectbox_store')
+
+        store_limit = st.number_input('Select number of top stores to display', min_value=1, max_value=100, value=20, step=1)
+
+        show_category_breakdown = st.checkbox('Show Category Breakdown', key='category_breakdown_checkbox')
+
+        if show_category_breakdown:
+            store_category_data = db.get_top_sales_stores_with_categories(
+                year=None if selected_year == 'All' else int(selected_year),
+                limit=store_limit,
+                option=option
+            )
+
+            if store_category_data:
+                df_store_category = pd.DataFrame(store_category_data, columns=['StoreName', 'CategoryName', option])
+                df_store_category[option] = df_store_category[option].astype(float)
+
+                fig = px.bar(df_store_category, x=option, y='StoreName', color='CategoryName', 
+                            title=f'Top {store_limit} Stores by Sales with Category Breakdown for {selected_year}', 
+                            orientation='h')
+                fig.update_layout(xaxis_title='Total Sales', yaxis_title='Store Name', barmode='stack')
+
+                st.plotly_chart(fig)
+            else:
+                st.warning('No data available for the selected year.')
+        else:
+            top_stores = db.get_top_sales_stores(
+                year=None if selected_year == 'All' else int(selected_year),
+                limit=store_limit
+            )
+            if top_stores:
+                df_stores = pd.DataFrame(top_stores, columns=['StoreName', option])
+                df_stores[option] = df_stores[option].astype(float)
+
+                fig = px.bar(df_stores, y='StoreName', x=option, title=f'Top {store_limit} Stores by Sales for {selected_year}', orientation='h')
+                fig.update_layout(xaxis_title='Total Sales', yaxis_title='Store Name', yaxis_categoryorder='total ascending')
+
+                st.plotly_chart(fig)
+            else:
+                st.warning('No data available for the selected year.')
+
+    with col2:
+        years = db.get_years_from_sales_orders()
+        years = ['All'] + [str(year[0]) for year in years]
+
+        selected_year = st.selectbox('Select Year', years, key='year_selectbox_customers')
+
+        customer_limit = st.number_input('Select number of top customers to display', min_value=1, max_value=100, value=20, step=1)
+
+        show_category_breakdown = st.checkbox('Show Category Breakdown', key='category_breakdown_checkbox_customers')
+
+        if show_category_breakdown:
+            customer_category_data = db.get_top_customers_with_categories(
+                year=None if selected_year == 'All' else int(selected_year),
+                limit=customer_limit
+            )
+
+            if customer_category_data:
+                df_customer_category = pd.DataFrame(customer_category_data, columns=['FirstName', 'LastName', 'CategoryName', 'TotalSales'])
+                df_customer_category['TotalSales'] = df_customer_category['TotalSales'].astype(float)
+
+                df_customer_category['CustomerName'] = df_customer_category['FirstName'] + " " + df_customer_category['LastName']
+
+                fig = px.bar(df_customer_category, x='TotalSales', y='CustomerName', color='CategoryName', 
+                            title=f'Top {customer_limit} Customers by Sales with Category Breakdown for {selected_year}', 
+                            orientation='h')
+
+                fig.update_layout(xaxis_title='Total Sales', yaxis_title='Customer Name', barmode='stack')
+
+                st.plotly_chart(fig)
+            else:
+                st.warning('No data available for the selected year.')
+        else:
+            top_customers = db.get_top_customers(
+                year=None if selected_year == 'All' else int(selected_year),
+                limit=customer_limit
+            )
+
+            if top_customers:
+                df_customers = pd.DataFrame(top_customers, columns=['FirstName', 'LastName', 'TotalSales'])
+                df_customers['TotalSales'] = df_customers['TotalSales'].astype(float)
+
+                df_customers['CustomerName'] = df_customers['FirstName'] + " " + df_customers['LastName']
+
+                fig = px.bar(df_customers, y='CustomerName', x='TotalSales', title=f'Top {customer_limit} Customers by Sales for {selected_year}', orientation='h')
+
+                st.plotly_chart(fig)
+            else:
+                st.warning('No data available for the selected year.')
 
 
 

@@ -97,6 +97,26 @@ def app(option):
             st.warning('Data not available.')
             logging.error(err)
 
+    years = db.get_years_from_sales_orders()
+    years = ['All'] + [str(year[0]) for year in years]
+
+    selected_year = st.selectbox('Select Year', years, key='year_selectbox_subcategory')
+
+    subcategory_data = db.get_subcategory_sales(
+        year=None if selected_year == 'All' else int(selected_year),
+        option=option
+    )
+
+    if subcategory_data:
+        df_subcategory = pd.DataFrame(subcategory_data, columns=['Subcategory', option])
+        df_subcategory[option] = df_subcategory[option].astype(float)
+        fig = px.bar(df_subcategory, x='Subcategory', y=option, title=f'Sales by Product Subcategory for {selected_year}')
+        fig.update_layout(xaxis_title='Product Subcategory', yaxis_title='Total Sales', xaxis_tickangle=-45)
+
+        st.plotly_chart(fig)
+    else:
+        st.warning('No data available for the selected year.')
+
 
 
 if __name__ == "__main__":

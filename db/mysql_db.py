@@ -1371,3 +1371,235 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return []
+
+    def get_subcategory_sales(self, option, year=None):
+        """
+        Retrieves sales by ProductSubcategory, optionally filtered by year.
+
+        Parameters:
+        - year (int, optional): The year to filter by. If None, data for all years is returned.
+
+        Returns:
+        list: A list of tuples containing Subcategory names and their total sales.
+        """
+        try:
+            sql = f"""
+            SELECT psc.Name AS Subcategory, 
+            SUM({option}) AS val
+            FROM Sales_SalesOrderDetail sod
+            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+            JOIN Production_Product p ON sod.ProductID = p.ProductID
+            JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            """
+
+            conditions = []
+            params = []
+
+            if year and year != 'All':
+                conditions.append("YEAR(soh.OrderDate) = %s")
+                params.append(year)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY psc.Name ORDER BY val DESC;"
+
+            self.cursor.execute(sql, params)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        
+    def get_years_from_sales_orders(self):
+        """
+        Retrieves distinct years from the Sales_SalesOrderHeader table.
+        """
+        try:
+            sql = "SELECT DISTINCT YEAR(OrderDate) AS Year FROM Sales_SalesOrderHeader ORDER BY Year;"
+            self.cursor.execute(sql)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return []
+        except Exception as err:
+            print(err)
+            return []
+
+    def get_top_sales_stores(self, year=None, limit=20):
+        """
+        Retrieves the top N stores by total sales, optionally filtered by year.
+        """
+        try:
+            sql = """
+            SELECT s.Name AS StoreName, SUM(soh.TotalDue) AS TotalSales
+            FROM Sales_SalesOrderHeader soh
+            JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
+            JOIN Sales_Store s ON c.StoreID = s.BusinessEntityID
+            """
+
+            conditions = []
+            params = []
+
+            if year and year != 'All':
+                conditions.append("YEAR(soh.OrderDate) = %s")
+                params.append(year)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY s.Name ORDER BY TotalSales DESC LIMIT %s;"
+            params.append(limit)
+
+            self.cursor.execute(sql, params)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+
+    def get_top_sales_stores_with_categories(self,option, year=None, limit=20):
+        """
+        Retrieves the top N stores by total sales with category breakdown, optionally filtered by year.
+        """
+        try:
+            sql = f"""
+            SELECT s.Name AS StoreName, IFNULL(pc.Name, 
+            'No Category') AS CategoryName, 
+            SUM({option}) AS val
+            FROM Sales_SalesOrderHeader soh
+            JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
+            JOIN Sales_Store s ON c.StoreID = s.BusinessEntityID
+            JOIN Sales_SalesOrderDetail sod 
+            ON soh.SalesOrderID = sod.SalesOrderID
+            JOIN Production_Product p 
+            ON sod.ProductID = p.ProductID
+            LEFT JOIN Production_ProductSubcategory psc 
+            ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc 
+            ON psc.ProductCategoryID = pc.ProductCategoryID
+            """
+
+            conditions = []
+            params = []
+
+            if year and year != 'All':
+                conditions.append("YEAR(soh.OrderDate) = %s")
+                params.append(year)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY s.Name, pc.Name ORDER BY val DESC LIMIT %s;"
+            params.append(limit)
+
+            self.cursor.execute(sql, params)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+
+
+    def get_top_customers(self, year=None, limit=20):
+        """
+        Retrieves the top N customers by total sales, optionally filtered by year.
+
+        Parameters:
+        - year (int, optional): The year to filter by. If None, data for all years is returned.
+        - limit (int): The number of top customers to return. Defaults to 20.
+
+        Returns:
+        list: A list of tuples containing customer names and their total sales.
+        """
+        try:
+            sql = """
+            SELECT p.FirstName, p.LastName, SUM(soh.TotalDue) AS TotalSales
+            FROM Sales_SalesOrderHeader soh
+            JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
+            JOIN Person_Person p ON c.PersonID = p.BusinessEntityID
+            """
+
+            conditions = []
+            params = []
+
+            if year and year != 'All':
+                conditions.append("YEAR(soh.OrderDate) = %s")
+                params.append(year)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY p.FirstName, p.LastName ORDER BY TotalSales DESC LIMIT %s;"
+            params.append(limit)
+
+            self.cursor.execute(sql, params)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+
+    def get_top_customers_with_categories(self, year=None, limit=20):
+        """
+        Retrieves the top N customers by total sales with category breakdown, optionally filtered by year.
+
+        Parameters:
+        - year (int, optional): The year to filter by. If None, data for all years is returned.
+        - limit (int): The number of top customers to return. Defaults to 20.
+
+        Returns:
+        list: A list of tuples containing customer names, category names, and their total sales.
+        """
+        try:
+            sql = """
+            SELECT p.FirstName, p.LastName, IFNULL(pc.Name, 'No Category') AS CategoryName, SUM(soh.TotalDue) AS TotalSales
+            FROM Sales_SalesOrderHeader soh
+            JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
+            JOIN Person_Person p ON c.PersonID = p.BusinessEntityID
+            JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+            JOIN Production_Product p2 ON sod.ProductID = p2.ProductID
+            LEFT JOIN Production_ProductSubcategory psc ON p2.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+            """
+
+            conditions = []
+            params = []
+
+            if year and year != 'All':
+                conditions.append("YEAR(soh.OrderDate) = %s")
+                params.append(year)
+
+            if conditions:
+                sql += " WHERE " + " AND ".join(conditions)
+
+            sql += " GROUP BY p.FirstName, p.LastName, pc.Name ORDER BY TotalSales DESC LIMIT %s;"
+            params.append(limit)
+
+            self.cursor.execute(sql, params)
+            return self.cursor.fetchall()
+        except mysql.connector.Error as err:
+            self.reconnect(err=err)
+            print(err)
+            return None
+        except Exception as err:
+            self.reconnect(err=err)
+            print(err)
+            return None

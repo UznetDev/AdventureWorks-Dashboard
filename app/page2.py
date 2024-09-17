@@ -126,6 +126,8 @@ def app(option):
 
 
 
+
+
 if __name__ == "__main__":
     db.create_table_sales_per_day()
     db.insert_table_sales_per_day()
