@@ -151,7 +151,7 @@ AdventureWorks-Dashboard/
 │   └── 🏂_Prediction.py.pbix            # 🏂_Prediction page script
 │
 ├── model.pkl                            # Pretrained machine learning model (if applicable)
-└── 🏠_Home.py                           # Main script for 🏠_Home page
+└── 🏠_Home.py                           # Main script for 🏠 Home page
 
 ```
 
