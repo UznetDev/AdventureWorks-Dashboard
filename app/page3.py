@@ -176,11 +176,18 @@ def app(option):
         years = db.get_years_from_sales_orders()
         years = ['All'] + [str(year[0]) for year in years]
 
-        selected_year = st.selectbox('Select Year', years, key='year_selectbox_customers')
+        selected_year = st.selectbox('Select Year', 
+                                    years, 
+                                    key='year_selectbox_customers')
 
-        customer_limit = st.number_input('Select number of top customers to display', min_value=1, max_value=100, value=20, step=1)
+        customer_limit = st.number_input('Select number of top customers to display', 
+                                        min_value=1, 
+                                        max_value=100,
+                                        value=20,
+                                        step=1)
 
-        show_category_breakdown = st.checkbox('Show Category Breakdown', key='category_breakdown_checkbox_customers')
+        show_category_breakdown = st.checkbox('Show Category Breakdown', 
+                                              key='category_breakdown_checkbox_customers')
 
         if show_category_breakdown:
             customer_category_data = db.get_top_customers_with_categories(
@@ -189,16 +196,21 @@ def app(option):
             )
 
             if customer_category_data:
-                df_customer_category = pd.DataFrame(customer_category_data, columns=['FirstName', 'LastName', 'CategoryName', option])
-                df_customer_category[option] = df_customer_category[option].astype(float)
+                df = pd.DataFrame(customer_category_data, 
+                                columns=['FirstName', 'LastName', 'CategoryName', option])
+                df[option] = df[option].astype(float)
 
-                df_customer_category['CustomerName'] = df_customer_category['FirstName'] + " " + df_customer_category['LastName']
+                df['CustomerName'] = df['FirstName'] + " " + df['LastName']
 
-                fig = px.bar(df_customer_category, x=option, y='CustomerName', color='CategoryName', 
+                fig = px.bar(df, 
+                            x=option, y='CustomerName', 
+                            color='CategoryName', 
                             title=f'Top {customer_limit} Customers by Sales with Category Breakdown for {selected_year}', 
                             orientation='h')
 
-                fig.update_layout(xaxis_title='Total Sales', yaxis_title='Customer Name', barmode='stack')
+                fig.update_layout(xaxis_title='Total Sales', 
+                                  yaxis_title='Customer Name', 
+                                  barmode='stack')
 
                 st.plotly_chart(fig)
             else:
@@ -213,8 +225,7 @@ def app(option):
             if top_customers:
                 df = pd.DataFrame(top_customers, columns=['name', option])
                 df[option] = df[option].astype(float)
-
-
+                df = df.sort_values(option)
                 fig = px.bar(df, 
                              y='name',
                              x=option, 
@@ -223,6 +234,12 @@ def app(option):
                 st.plotly_chart(fig)
             else:
                 st.warning('No data available for the selected year.')
+
+
+
+
+
+
 
 
 

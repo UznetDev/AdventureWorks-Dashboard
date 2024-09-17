@@ -113,24 +113,24 @@ option = st.selectbox(
 if "nav" not in st.session_state:
     st.session_state["nav"] = "1"
 
-col1, col2, col3, col4, col5, col6 = st.columns([1,1,1,1,1,1])
+col1, col2, col3, col4, col5 = st.columns([1,1,1,1,1])
 
 with col1:
-    if st.button("Home"):
+    if st.button("Page 1"):
         st.session_state["nav"] = "1"
 with col2:
-    if st.button("Page 1"):
+    if st.button("Page 2"):
         st.session_state["nav"] = "2"
 with col3:
-    if st.button("Page 2"):
-        st.session_state["nav"] = "3"
-with col4:
     if st.button("Page 3"):
+        st.session_state["nav"] = "3"
+# with col4:
+#     if st.button("Page 3"):
+#         st.session_state["nav"] = "4"
+with col4:
+    if st.button("Page 4"):
         st.session_state["nav"] = "4"
 with col5:
-    if st.button("Page 4"):
-        st.session_state["nav"] = "5"
-with col6:
     if st.button("Model"):
         st.session_state["nav"] = "m"
 
@@ -145,10 +145,10 @@ elif selected_page == "2":
 elif selected_page == "3":
     from app.page3 import app
     app(option=option)
+# elif selected_page == "4":
+#     from app.page4 import app
+#     app(option=option)
 elif selected_page == "4":
-    from app.page4 import app
-    app(option=option)
-elif selected_page == "5":
     from app.page5 import app
     app(option=option)
 elif selected_page == "m":

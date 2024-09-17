@@ -1527,8 +1527,10 @@ class Database:
             FROM Sales_SalesOrderHeader soh
             JOIN Sales_SalesOrderDetail sod
             ON sod.SalesOrderID = soh.SalesOrderID
-            JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
-            JOIN Person_Person p ON c.PersonID = p.BusinessEntityID
+            JOIN Sales_Customer c 
+            ON soh.CustomerID = c.CustomerID
+            JOIN Person_Person p 
+            ON c.PersonID = p.BusinessEntityID
             """
 
             conditions = []
@@ -1543,7 +1545,6 @@ class Database:
 
             sql += " GROUP BY name ORDER BY val DESC LIMIT %s;"
             params.append(limit)
-
             self.cursor.execute(sql, params)
             return self.cursor.fetchall()
         except mysql.connector.Error as err:
@@ -1568,14 +1569,21 @@ class Database:
         """
         try:
             sql = """
-            SELECT p.FirstName, p.LastName, IFNULL(pc.Name, 'No Category') AS CategoryName, SUM(soh.TotalDue) AS TotalSales
+            SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, 
+            IFNULL(pc.Name, 'No Category') AS category, 
+            SUM(soh.TotalDue) AS val
             FROM Sales_SalesOrderHeader soh
-            JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
-            JOIN Person_Person p ON c.PersonID = p.BusinessEntityID
+            JOIN Sales_Customer c 
+            ON soh.CustomerID = c.CustomerID
+            JOIN Person_Person p 
+            ON c.PersonID = p.BusinessEntityID
             JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
-            JOIN Production_Product p2 ON sod.ProductID = p2.ProductID
-            LEFT JOIN Production_ProductSubcategory psc ON p2.ProductSubcategoryID = psc.ProductSubcategoryID
-            LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+            JOIN Production_Product p2 
+            ON sod.ProductID = p2.ProductID
+            LEFT JOIN Production_ProductSubcategory psc 
+            ON p2.ProductSubcategoryID = psc.ProductSubcategoryID
+            LEFT JOIN Production_ProductCategory pc 
+            ON psc.ProductCategoryID = pc.ProductCategoryID
             """
 
             conditions = []
@@ -1588,7 +1596,7 @@ class Database:
             if conditions:
                 sql += " WHERE " + " AND ".join(conditions)
 
-            sql += " GROUP BY p.FirstName, p.LastName, pc.Name ORDER BY TotalSales DESC LIMIT %s;"
+            sql += " GROUP BY name, category ORDER BY val DESC LIMIT %s;"
             params.append(limit)
 
             self.cursor.execute(sql, params)
