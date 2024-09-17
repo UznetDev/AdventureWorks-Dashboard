@@ -761,13 +761,13 @@ class Database:
             return None
 
 
-    def get_shipmethod_distribution(self, metric='TotalRevenue', location=None, category=None):
+    def get_shipmethod_distribution(self, option, location=None, category=None):
         """
         Retrieves the distribution of the specified metric by ShipMethod,
         optionally filtered by location and category.
 
         Parameters:
-        - metric (str): The metric to aggregate ('TotalRevenue' or 'OrderCount').
+        - option (str): The metric to aggregate.
         - location (str, optional): The name of the location to filter by. Defaults to None.
         - category (str, optional): The name of the product category to filter by. Defaults to None.
 
@@ -778,9 +778,9 @@ class Database:
         mysql.connector.Error: If there is an error executing the query.
         """
         try:
-            if metric == 'TotalRevenue':
-                sql = """
-                SELECT sm.Name AS ShipMethod, SUM(sod.LineTotal) AS TotalRevenue
+            sql = f"""
+                SELECT sm.Name AS ShipMethod, 
+                SUM({option}) AS value
                 FROM Sales_SalesOrderDetail sod
                 JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
                 JOIN Purchasing_ShipMethod sm ON soh.ShipMethodID = sm.ShipMethodID
@@ -789,31 +789,7 @@ class Database:
                 LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                 LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
                 """
-                order_by_column = "TotalRevenue"
-            elif metric == 'OrderCount':
-                sql = """
-                SELECT sm.Name AS ShipMethod, COUNT(*) AS OrderCount
-                FROM Sales_SalesOrderHeader soh
-                JOIN Purchasing_ShipMethod sm ON soh.ShipMethodID = sm.ShipMethodID
-                JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
-                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
-                """
-                order_by_column = "OrderCount"
-            else:
-                sql = """
-                SELECT sm.Name AS ShipMethod, SUM(sod.LineTotal) AS TotalRevenue
-                FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                JOIN Purchasing_ShipMethod sm ON soh.ShipMethodID = sm.ShipMethodID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
-                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
-                """
-                order_by_column = "TotalRevenue"
+            
 
             conditions = []
             params = []
@@ -829,7 +805,7 @@ class Database:
             if conditions:
                 sql += " WHERE " + " AND ".join(conditions)
 
-            sql += f" GROUP BY sm.Name ORDER BY {order_by_column} DESC;"
+            sql += f" GROUP BY sm.Name ORDER BY value DESC;"
 
             self.cursor.execute(sql, params)
             return self.cursor.fetchall()
@@ -1211,8 +1187,8 @@ class Database:
             print(err)
             return None
         
-        
-    def get_color_distribution(self, metric='TotalRevenue', location=None, category=None, year=None):
+
+    def get_color_distribution(self, option, location=None, category=None, year=None):
         """
         Retrieves the distribution of the specified metric by Product Color,
         optionally filtered by location, category, and year.
@@ -1230,9 +1206,9 @@ class Database:
         mysql.connector.Error: If there is an error executing the query.
         """
         try:
-            if metric == 'TotalRevenue':
-                sql = """
-                SELECT IFNULL(p.Color, 'No Color') AS Color, SUM(sod.LineTotal) AS TotalRevenue
+            sql = """
+                SELECT IFNULL(p.Color, 'No Color')
+                AS Color, SUM(sod.LineTotal) AS value
                 FROM Sales_SalesOrderDetail sod
                 JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
                 JOIN Production_Product p ON sod.ProductID = p.ProductID
@@ -1240,29 +1216,6 @@ class Database:
                 LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                 LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
                 """
-                order_by_column = "TotalRevenue"
-            elif metric == 'OrderCount':
-                sql = """
-                SELECT IFNULL(p.Color, 'No Color') AS Color, COUNT(*) AS OrderCount
-                FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
-                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
-                """
-                order_by_column = "OrderCount"
-            else:
-                sql = """
-                SELECT IFNULL(p.Color, 'No Color') AS Color, SUM(sod.LineTotal) AS TotalRevenue
-                FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
-                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
-                """
-                order_by_column = "TotalRevenue"
 
             conditions = []
             params = []
@@ -1282,7 +1235,7 @@ class Database:
             if conditions:
                 sql += " WHERE " + " AND ".join(conditions)
 
-            sql += f" GROUP BY p.Color ORDER BY {order_by_column} DESC;"
+            sql += f" GROUP BY p.Color ORDER BY value DESC;"
 
             self.cursor.execute(sql, params)
             return self.cursor.fetchall()

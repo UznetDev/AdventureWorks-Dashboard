@@ -441,28 +441,28 @@ sales_data_day = db.get_sales_by_day(option=option, location=selected_location, 
 
 with col1:
     try:
-        metric_option = st.selectbox('Select Metric', ['Total Revenue', 'Number of Orders'], key='metric_selectbox')
-        if metric_option == 'Total Revenue':
-            metric = 'TotalRevenue'
-        else:
-            metric = 'OrderCount'
+        # metric_option = st.selectbox('Select Metric', ['Total Revenue', 'Number of Orders'], key='metric_selectbox')
+        # if metric_option == 'Total Revenue':
+        #     metric = 'TotalRevenue'
+        # else:
+        #     metric = 'OrderCount'
 
         shipmethod_data = db.get_shipmethod_distribution(
-            metric=metric,
+            option=option,
             location=selected_location,
             category=selected_category
         )
         if shipmethod_data:
-            if metric == 'TotalRevenue':
-                df = pd.DataFrame(shipmethod_data, columns=['ShipMethod', 'TotalRevenue'])
-                df['TotalRevenue'] = df['TotalRevenue'].astype(float)
-                values_column = 'TotalRevenue'
-                title = 'Total Revenue by Ship Method'
-            else:
-                df = pd.DataFrame(shipmethod_data, columns=['ShipMethod', 'OrderCount'])
-                df['OrderCount'] = df['OrderCount'].astype(int)
-                values_column = 'OrderCount'
-                title = 'Number of Orders by Ship Method'
+            # if metric == option:
+            df = pd.DataFrame(shipmethod_data, columns=['ShipMethod', option])
+            df[option] = df[option].astype(float)
+            values_column = option
+            title = f'{option} by Ship Method'
+            # else:
+            #     df = pd.DataFrame(shipmethod_data, columns=['ShipMethod', 'OrderCount'])
+            #     df['OrderCount'] = df['OrderCount'].astype(int)
+            #     values_column = 'OrderCount'
+            #     title = 'Number of Orders by Ship Method'
 
             fig = px.pie(df, names='ShipMethod', values=values_column, title=title, hole=0.4)
             fig.update_traces(pull=[0.04, 0.06, 0.08, 0.1],
@@ -626,11 +626,11 @@ with col1:
             years = ['All'] + [str(year[0]) for year in years]
             selected_year = st.selectbox('Select Year', years, key='year_selectbox_color')
 
-            metric_option = st.selectbox('Select Metric', ['Total Revenue', 'Number of Orders'], key='metric_selectbox_color')
-        if metric_option == 'Total Revenue':
-            metric = 'TotalRevenue'
-        else:
-            metric = 'OrderCount'
+            # metric_option = st.selectbox('Select Metric', ['Total Revenue', 'Number of Orders'], key='metric_selectbox_color')
+        # if metric_option == 'Total Revenue':
+        #     metric = 'TotalRevenue'
+        # else:
+        #     metric = 'OrderCount'
 
         with s_col2:
             selected_location = st.selectbox('Select Location', ['All'] + locations, key='location_selectbox_color')
@@ -638,25 +638,24 @@ with col1:
 
 
         color_data = db.get_color_distribution(
-            metric=metric,
+            option=option,
             location=selected_location,
             category=selected_category,
             year=None if selected_year == 'All' else int(selected_year)
         )
 
         if color_data:
-            if metric == 'TotalRevenue':
-                df = pd.DataFrame(color_data, columns=['Color', 'TotalRevenue'])
-                df['TotalRevenue'] = df['TotalRevenue'].astype(float)
-                values_column = 'TotalRevenue'
-                title = f'Total Revenue by Product Color for {selected_year}'
-            else:
-                df = pd.DataFrame(color_data, columns=['Color', 'OrderCount'])
-                df['OrderCount'] = df['OrderCount'].astype(int)
-                values_column = 'OrderCount'
-                title = f'Number of Orders by Product Color for {selected_year}'
+            # if metric == 'TotalRevenue':
+            df = pd.DataFrame(color_data, columns=['Color', option])
+            df[option] = df[option].astype(float)
+            title = f'{option} by Product Color for {selected_year}'
+            # else:
+            #     df = pd.DataFrame(color_data, columns=['Color', 'OrderCount'])
+            #     df['OrderCount'] = df['OrderCount'].astype(int)
+            #     values_column = 'OrderCount'
+            #     title = f'Number of Orders by Product Color for {selected_year}'
 
-            fig = px.pie(df, names='Color', values=values_column, title=title, hole=0.4)
+            fig = px.pie(df, names='Color', values=option, title=title, hole=0.4)
             fig.update_traces(pull=[0.04, 0.06, 0.08, 0.1],
                               textinfo='percent+label',
                               marker=dict(line=dict(color='white', width=2)))
