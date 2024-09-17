@@ -133,25 +133,30 @@ def app(option):
 
         selected_year = st.selectbox('Select Year', years, key='year_selectbox_store')
 
-        store_limit = st.number_input('Select number of top stores to display', min_value=1, max_value=100, value=20, step=1)
+        limit = st.number_input('Select number of top stores to display', 
+                                min_value=1, max_value=100, value=20, step=1)
 
         show = st.checkbox('Show Category Breakdown', key='category_breakdown_checkbox')
 
         if show:
             store_category_data = db.get_top_sales_stores_with_categories(
                 year=None if selected_year == 'All' else int(selected_year),
-                limit=store_limit,
+                limit=limit,
                 option=option
             )
 
             if store_category_data:
-                df_store_category = pd.DataFrame(store_category_data, columns=['StoreName', 'CategoryName', option])
-                df_store_category[option] = df_store_category[option].astype(float)
+                df = pd.DataFrame(store_category_data, 
+                                  columns=['StoreName', 'CategoryName', option])
+                df[option] = df[option].astype(float)
 
-                fig = px.bar(df_store_category, x=option, y='StoreName', color='CategoryName', 
-                            title=f'Top {store_limit} Stores by Sales with Category Breakdown for {selected_year}', 
+                fig = px.bar(df, 
+                            x=option, 
+                            y='StoreName', 
+                            color='CategoryName', 
+                            title=f'Top {limit} Stores by Sales with Category Breakdown for {selected_year}', 
                             orientation='h')
-                fig.update_layout(xaxis_title='Total Sales', 
+                fig.update_layout(xaxis_title=option, 
                                   yaxis_title='Store Name', 
                                   barmode='stack')
 
@@ -161,15 +166,21 @@ def app(option):
         else:
             top_stores = db.get_top_sales_stores(
                 year=None if selected_year == 'All' else int(selected_year),
-                limit=store_limit,
+                limit=limit,
                 option=option
             )
             if top_stores:
-                df_stores = pd.DataFrame(top_stores, columns=['StoreName', option])
-                df_stores[option] = df_stores[option].astype(float)
+                df = pd.DataFrame(top_stores, columns=['StoreName', option])
+                df[option] = df[option].astype(float)
 
-                fig = px.bar(df_stores, y='StoreName', x=option, title=f'Top {store_limit} Stores by Sales for {selected_year}', orientation='h')
-                fig.update_layout(xaxis_title='Total Sales', yaxis_title='Store Name', yaxis_categoryorder='total ascending')
+                fig = px.bar(df, y='StoreName', 
+                             x=option, 
+                             title=f'Top {limit} Stores by Sales for {selected_year}', 
+                             orientation='h')
+                fig.update_layout(xaxis_title=option, 
+                                  yaxis_title='Store Name', 
+                                #   yaxis_categoryorder='total ascending'
+                                  )
 
                 st.plotly_chart(fig)
             else:
@@ -190,7 +201,7 @@ def app(option):
                                         step=1)
 
         show = st.checkbox('Show Category Breakdown', 
-                                              key='category_breakdown_checkbox_customers')
+                            key='category_breakdown_checkbox_customers')
 
         if show:
             customer_category_data = db.get_top_customers_with_categories(
@@ -205,12 +216,13 @@ def app(option):
                 df[option] = df[option].astype(float)
 
                 fig = px.bar(df, 
-                            x=option, y='Customer Name', 
+                            x=option, 
+                            y='Customer Name', 
                             color='CategoryName', 
                             title=f'Top {customer_limit} Customers by Sales with Category Breakdown for {selected_year}', 
                             orientation='h')
 
-                fig.update_layout(xaxis_title='Total Sales', 
+                fig.update_layout(xaxis_title=option, 
                                   yaxis_title='Customer Name', 
                                   barmode='stack')
 
@@ -227,7 +239,6 @@ def app(option):
             if top_customers:
                 df = pd.DataFrame(top_customers, columns=['name', option])
                 df[option] = df[option].astype(float)
-                df = df.sort_values(option)
                 fig = px.bar(df, 
                              y='name',
                              x=option, 
@@ -270,9 +281,12 @@ def app(option):
             else:
                 st.warning('No data available for the selected year.')
         else:
-            top_sellers = db.get_top_sellers(option=option, year=selected_year, limit=seller_limit)
-            if top_sellers:
-                df = pd.DataFrame(top_sellers, columns=['Seller Name', option])
+            data = db.get_top_sellers(option=option, 
+                                    year=selected_year, 
+                                    limit=seller_limit)
+            if data:
+                df = pd.DataFrame(data, 
+                                  columns=['Seller Name', option])
                 df[option] = df[option].astype(float)
                 fig = px.bar(df, y='Seller Name', x=option, 
                             title=f'Top {seller_limit} Sellers by {option} for {selected_year or "All Years"}', 
