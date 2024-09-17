@@ -1,14 +1,8 @@
-import joblib
-import plotly.express as px
 import streamlit as st
 import pandas as pd
-from plotly.subplots import make_subplots
-import plotly.graph_objects as go
+import joblib
 from loader import *
-from function.function import *
 from datetime import datetime
-
-
 
 st.set_page_config(page_title="Sales Prediction",
                    page_icon=":bar_chart:",
@@ -27,8 +21,12 @@ st_style = """
 st.markdown(st_style, 
             unsafe_allow_html=True)
 
-
 model = joblib.load('model.pkl')
+
+
+colors = db.get_color()
+categories = db.get_categories()
+ship_methods = db.get_ship_method()
 
 current_date = datetime.now().date()
 current_year = current_date.year
@@ -37,53 +35,66 @@ current_day = current_date.day
 
 st.title("Sales TotalDue Prediction")
 
-
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    SalesOrderID = st.number_input('SalesOrderID')
+    SalesOrderID = st.number_input('SalesOrderID', min_value=1)
     OnlineOrderFlag = st.selectbox('OnlineOrderFlag', [0, 1])
     SalesOrderNumber = st.number_input('SalesOrderNumber', min_value=1)
     PurchaseOrderNumber = st.number_input('PurchaseOrderNumber', min_value=1)
+    OrderQty = st.number_input('OrderQty', min_value=1, value=1)
 with col2:
     LineTotal = st.number_input('LineTotal', value=0.0)
     StandardCost = st.number_input('StandardCost', value=0.0)
     ListPrice = st.number_input('ListPrice', value=0.0)
-    CustomerID = st.number_input('CustomerID')
-    AccountNumber = st.number_input('AccountNumber')
+    CustomerID = st.number_input('CustomerID', min_value=1)
+    AccountNumber = st.number_input('AccountNumber', min_value=1)
 
 with col3:
-    OrderDate_Day = st.number_input('OrderDate_Day', min_value=1, max_value=31, value=current_day)
-    OrderDate_Year = st.number_input('OrderDate_Year', min_value=2000, max_value=2025, value=current_year)
+    Color = st.selectbox('Color', options=colors)
+    CategoryName = st.selectbox('CategoryName', options=categories)
+    ShipMethodName = st.selectbox('ShipMethodName', options=ship_methods)
 
-    DueDate_Day = st.number_input('DueDate_Day', min_value=1, max_value=31, value=current_day)
-    DueDate_Year = st.number_input('DueDate_Year', min_value=2000, max_value=2025, value=current_year)
+with col4:
+    OrderDate = st.date_input('Order Date', current_date)
+    DueDate = st.date_input('Due Date', current_date)
+    ShipDate = st.date_input('Ship Date', current_date)
 
-    ShipDate_Day = st.number_input('ShipDate_Day', min_value=1, max_value=31, value=current_day)
-    ShipDate_Year = st.number_input('ShipDate_Year', min_value=2000, max_value=2025, value=current_year)
+
+OrderDate_Day = OrderDate.day
+OrderDate_Year = OrderDate.year
+DueDate_Day = DueDate.day
+DueDate_Year = DueDate.year
+ShipDate_Day = ShipDate.day
+ShipDate_Year = ShipDate.year
 
 
-if st.button('Predict TotalDue'):
-    if not all([SalesOrderID, SalesOrderNumber, PurchaseOrderNumber, CustomerID, AccountNumber]):
-        st.error("Please fill in all the required fields!")
-    else:
-        input_data = pd.DataFrame({
-            'SalesOrderID': [SalesOrderID],
-            'OnlineOrderFlag': [OnlineOrderFlag],
-            'SalesOrderNumber': [SalesOrderNumber],
-            'PurchaseOrderNumber': [PurchaseOrderNumber],
-            'LineTotal': [LineTotal],
-            'StandardCost': [StandardCost],
-            'ListPrice': [ListPrice],
-            'CustomerID': [CustomerID],
-            'AccountNumber': [AccountNumber],
-            'OrderDate_Day': [OrderDate_Day],
-            'OrderDate_Year': [OrderDate_Year],
-            'DueDate_Day': [DueDate_Day],
-            'DueDate_Year': [DueDate_Year],
-            'ShipDate_Day': [ShipDate_Day],
-            'ShipDate_Year': [ShipDate_Year]
-        })
-
+input_data = pd.DataFrame({
+    'SalesOrderID': [SalesOrderID],
+    'OnlineOrderFlag': [OnlineOrderFlag],
+    'SalesOrderNumber': [SalesOrderNumber],
+    'PurchaseOrderNumber': [PurchaseOrderNumber],
+    'OrderQty': [OrderQty],
+    'LineTotal': [LineTotal],
+    'StandardCost': [StandardCost],
+    'ListPrice': [ListPrice],
+    'CustomerID': [CustomerID],
+    'AccountNumber': [AccountNumber],
+    'OrderDate_Day': [OrderDate_Day],
+    'OrderDate_Year': [OrderDate_Year],
+    'DueDate_Day': [DueDate_Day],
+    'DueDate_Year': [DueDate_Year],
+    'ShipDate_Day': [ShipDate_Day],
+    'ShipDate_Year': [ShipDate_Year],
+    'Color': [Color],
+    'CategoryName': [CategoryName],
+    'ShipMethodName': [ShipMethodName],
+    'DueDate': [DueDate],
+    'ShipDate': [ShipDate],
+    'OrderDate': [OrderDate]
+})
+with col3:
+    if st.button('Predict TotalDue'):
         prediction = model.predict(input_data)
-        st.write(f'Predicted TotalDue: {prediction[0]:.2f}')
+        with col4:
+            st.write(f'Predicted TotalDue: {prediction[0]:.2f}')
