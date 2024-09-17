@@ -22,7 +22,6 @@ class Database:
         self.database = database
         self.reconnect(connection=True)
 
-
     def reconnect(self,err=None, retries=5, connection=False):
         """
         Reconnects to the MySQL database if the connection is lost. This function attempts to reconnect multiple times in case of failure.
@@ -67,7 +66,6 @@ class Database:
         except Exception as err:
             logging.error(err)
 
-
     def create_table_sales_per_day(self):
         """
         Creates the 'sales_per_day' table if it doesn't exist in the database.
@@ -95,7 +93,6 @@ class Database:
         except Exception as err:
             self.reconnect(err=err)
             return None
-
 
     def insert_table_sales_per_day(self):
         """
@@ -133,7 +130,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_total_due(self):
         """
@@ -192,7 +188,6 @@ class Database:
             print(err)
             return None
 
-
     def get_total_profit(self):
         """
         Fetches the total profit by calculating the difference between 'LineTotal' and 
@@ -222,8 +217,6 @@ class Database:
             self.reconnect()
             return None
 
-                
-
     def get_sales_count(self):
         """
         Fetches the total number of sales records from the 'Sales_SalesOrderHeader' table.
@@ -247,7 +240,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_sales_by_category(self, option):
         """
@@ -289,7 +281,6 @@ class Database:
             print(err)
             return None
 
-
     def get_sales_by_territory(self, option):
         """
         Fetches sales data grouped by territory and product category, and aggregates based on the specified option.
@@ -328,7 +319,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_sales_by_p_region(self, option):
         """
@@ -374,7 +364,6 @@ class Database:
             print(err)
             return None
     
-
     def get_sales_by_month(self, option, location=None, category=None):
         """
         Fetches sales data grouped by month and aggregates based on the specified option.
@@ -447,7 +436,6 @@ class Database:
             print(err)
             return None
 
-
     def get_sales_by_year(self, option, location=None, category=None):
         """
         Fetches sales data grouped by year and aggregates based on the specified option.
@@ -519,7 +507,6 @@ class Database:
             print(err)
             return None
 
-
     def get_sales_by_reason_type(self, option):
         """
         Fetches sales data grouped by sales reason type and aggregates based on the specified option.
@@ -552,7 +539,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_map(self, option):
         """
@@ -598,7 +584,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_online_percentage(self, option):
         """
@@ -650,7 +635,6 @@ class Database:
             print(err)
             return None
 
-
     def get_locations(self):
         """
         Fetches a list of distinct locations (territories) from the database.
@@ -677,7 +661,6 @@ class Database:
             print(err)
             return None
 
-
     def get_categories(self):
         """
         Fetches a list of distinct product categories from the database.
@@ -703,7 +686,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_financial_breakdown(self, location=None, category=None):
         """
@@ -759,7 +741,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_shipmethod_distribution(self, option, location=None, category=None):
         """
@@ -818,7 +799,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_sales_by_day(self, option, location=None, category=None):
         """
@@ -900,7 +880,6 @@ class Database:
             print(err)
             return None
 
-
     def get_sales_by_day_with_category(self, option, location=None):
         """
         Fetches sales data grouped by day of the month, broken down by category,
@@ -957,14 +936,13 @@ class Database:
             print(err)
             return None
 
-
     def get_sales_by_month_with_category(self, option, location=None):
         """
         Fetches sales data grouped by month, broken down by category,
         optionally filtered by location, and aggregates based on the specified option.
 
         Parameters:
-        option (str): The metric to aggregate (e.g., 'TotalDue', 'OrderQty').
+        option (str): The metric to aggregate.
         location (str, optional): The sales territory to filter by. Defaults to None.
 
         Returns:
@@ -1014,7 +992,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_sales_by_year_with_category(self, option, location=None):
         """
@@ -1067,7 +1044,6 @@ class Database:
             self.reconnect(err=err)
             print(err)
             return None
-
 
     def get_all_data(self):
         """
@@ -1133,7 +1109,6 @@ class Database:
         except mysql.connector.Error as err:
             logging.error(f"MySQL error: {err}")
             return None
-
 
     def get_color(self):
         """
@@ -1371,6 +1346,7 @@ class Database:
 
         Parameters:
         - year (int, optional): The year to filter by. If None, data for all years is returned.
+        - option (str): The option 
 
         Returns:
         list: A list of tuples containing Subcategory names and their total sales.
@@ -1416,7 +1392,10 @@ class Database:
         Retrieves distinct years from the Sales_SalesOrderHeader table.
         """
         try:
-            sql = "SELECT DISTINCT YEAR(OrderDate) AS Year FROM Sales_SalesOrderHeader ORDER BY Year;"
+            sql = """
+            SELECT DISTINCT YEAR(OrderDate) AS year 
+            FROM Sales_SalesOrderHeader 
+            ORDER BY year;"""
             self.cursor.execute(sql)
             return self.cursor.fetchall()
         except mysql.connector.Error as err:
@@ -1516,6 +1495,7 @@ class Database:
         Parameters:
         - year (int, optional): The year to filter by. If None, data for all years is returned.
         - limit (int): The number of top customers to return. Defaults to 20.
+        - option (str): The metric to aggregate.
 
         Returns:
         list: A list of tuples containing customer names and their total sales.
@@ -1556,28 +1536,30 @@ class Database:
             print(err)
             return None
 
-    def get_top_customers_with_categories(self, year=None, limit=20):
+    def get_top_customers_with_categories(self, option, year=None, limit=20):
         """
         Retrieves the top N customers by total sales with category breakdown, optionally filtered by year.
 
         Parameters:
         - year (int, optional): The year to filter by. If None, data for all years is returned.
         - limit (int): The number of top customers to return. Defaults to 20.
+        - option (str): The metric to aggregate
 
         Returns:
         list: A list of tuples containing customer names, category names, and their total sales.
         """
         try:
-            sql = """
+            sql = f"""
             SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, 
             IFNULL(pc.Name, 'No Category') AS category, 
-            SUM(soh.TotalDue) AS val
+            SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
             JOIN Sales_Customer c 
             ON soh.CustomerID = c.CustomerID
             JOIN Person_Person p 
             ON c.PersonID = p.BusinessEntityID
-            JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+            JOIN Sales_SalesOrderDetail sod 
+            ON soh.SalesOrderID = sod.SalesOrderID
             JOIN Production_Product p2 
             ON sod.ProductID = p2.ProductID
             LEFT JOIN Production_ProductSubcategory psc 
@@ -1610,7 +1592,6 @@ class Database:
             print(err)
             return None
 
-
     def get_top_customers2(self, option, year=None, limit=20):
         """
         Retrieves the top N customers by total sales, optionally filtered by year.
@@ -1618,17 +1599,22 @@ class Database:
         Parameters:
         - year (int, optional): The year to filter by. If None, data for all years is returned.
         - limit (int): The number of top customers to return. Defaults to 20.
+        - option (str): The metric to aggregate
 
         Returns:
         list: A list of tuples containing customer names and their total sales.
         """
         try:
-            sql = """
+            sql = f"""
             SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, 
-            SUM(soh.TotalDue) AS val
+            SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
-            JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
-            JOIN Person_Person p ON c.PersonID = p.BusinessEntityID
+            JOIN Sales_SalesOrderDetail sod 
+            ON soh.SalesOrderID = sod.SalesOrderID
+            JOIN Sales_Customer c 
+            ON soh.CustomerID = c.CustomerID
+            JOIN Person_Person p 
+            ON c.PersonID = p.BusinessEntityID
             """
 
             conditions = []

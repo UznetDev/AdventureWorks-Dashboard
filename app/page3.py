@@ -124,7 +124,6 @@ def app(option):
             st.warning('Data not available.')
             logging.error(err)
 
-
     with col1:
         years = db.get_years_from_sales_orders()
         years = ['All'] + [str(year[0]) for year in years]
@@ -192,18 +191,17 @@ def app(option):
         if show_category_breakdown:
             customer_category_data = db.get_top_customers_with_categories(
                 year=None if selected_year == 'All' else int(selected_year),
-                limit=customer_limit
+                limit=customer_limit,
+                option=option
             )
 
             if customer_category_data:
                 df = pd.DataFrame(customer_category_data, 
-                                columns=['FirstName', 'LastName', 'CategoryName', option])
+                                columns=['Customer Name', 'CategoryName', option])
                 df[option] = df[option].astype(float)
 
-                df['CustomerName'] = df['FirstName'] + " " + df['LastName']
-
                 fig = px.bar(df, 
-                            x=option, y='CustomerName', 
+                            x=option, y='Customer Name', 
                             color='CategoryName', 
                             title=f'Top {customer_limit} Customers by Sales with Category Breakdown for {selected_year}', 
                             orientation='h')
@@ -234,13 +232,6 @@ def app(option):
                 st.plotly_chart(fig)
             else:
                 st.warning('No data available for the selected year.')
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
