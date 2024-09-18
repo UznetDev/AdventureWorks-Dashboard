@@ -116,7 +116,7 @@ MYSQL_DATABASE= <your MySQL database>
 7. **Include database:**
 
    ```bash
-   mysql -u [your MySQL user] -p [your MySQL database] < atabase.sql
+   mysql -u [your MySQL user] -p [your MySQL database] < database/database.sql
    ```
 
 8. **Run the Streamlit application:**
