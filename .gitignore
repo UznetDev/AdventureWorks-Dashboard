@@ -1,6 +1,7 @@
 env
 .env
 venv
+.venv
 env*
 .idea
 .build
