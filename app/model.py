@@ -25,10 +25,7 @@ def app():
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        SalesOrderID = 0 #st.number_input('SalesOrderID', min_value=1)
         OnlineOrderFlag = st.selectbox('OnlineOrderFlag', [0, 1])
-        SalesOrderNumber = 0 #st.number_input('SalesOrderNumber', min_value=1)
-        PurchaseOrderNumber = 0 #st.number_input('PurchaseOrderNumber', min_value=1)
         OrderQty = st.number_input('OrderQty', min_value=1, value=1)
         AccountNumber = st.number_input('AccountNumber', min_value=1)
         CustomerID = st.number_input('CustomerID', min_value=1)
@@ -60,13 +57,10 @@ def app():
     input_data = pd.DataFrame({
         'SalesOrderID': [SalesOrderID],
         'OnlineOrderFlag': [OnlineOrderFlag],
-        'SalesOrderNumber': [SalesOrderNumber],
-        'PurchaseOrderNumber': [PurchaseOrderNumber],
         'OrderQty': [OrderQty],
         'LineTotal': [LineTotal],
         'StandardCost': [StandardCost],
         'ListPrice': [ListPrice],
-        'CustomerID': [CustomerID],
         'AccountNumber': [AccountNumber],
         'OrderDate_Day': [OrderDate_Day],
         'OrderDate_Year': [OrderDate_Year],
