@@ -6,6 +6,20 @@ import time
 
 
 def abbreviate_number(num):
+    """
+    Given a large number, this function converts it to an abbreviated format using K (thousands), M (millions), 
+    B (billions), and T (trillions) as shorthand notations. 
+    It handles both positive and negative numbers. If the input is not a number, it returns the input as is.
+
+    Args:
+        num (int or float): The number to be abbreviated.
+
+    Returns:
+        str: The abbreviated version of the input number.
+
+    Example:
+        abbreviate_number(1500)  # Returns "1.5K"
+    """
     try:
         num = int(num)
         if abs(num) < 1000:
@@ -23,6 +37,26 @@ def abbreviate_number(num):
     
 
 def normalize_data(df, value_column, start=-1, end=1, new_column=None, response=False):
+    """
+    Normalizes the data in a specific column of a Pandas DataFrame between a given range [start, end].
+    If `response` is True, the function will return the normalized data as a Pandas Series without altering the DataFrame. 
+    Otherwise, it adds a new column to the DataFrame with normalized values.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing the data to normalize.
+        value_column (str): The column name whose values need to be normalized.
+        start (float, optional): The lower bound of the normalized range. Default is -1.
+        end (float, optional): The upper bound of the normalized range. Default is 1.
+        new_column (str, optional): The name of the new column to store normalized values. Default is 'NormalizedSales'.
+        response (bool, optional): Whether to return the normalized series instead of modifying the DataFrame. Default is False.
+
+    Returns:
+        pd.DataFrame or pd.Series: The DataFrame with a new normalized column, or a Series if `response=True`.
+
+    Example:
+        df = pd.DataFrame({'Sales': [100, 200, 300]})
+        normalize_data(df, 'Sales')  # Adds a 'NormalizedSales' column to the DataFrame
+    """
     min_value = df[value_column].min()
     max_value = df[value_column].max()
 
@@ -41,73 +75,23 @@ def normalize_data(df, value_column, start=-1, end=1, new_column=None, response=
     return df
 
 
-#
-# def make_donut(input_response, input_text, input_color=None):
-#
-#     if input_color is None:
-#         input_color = 'orange' if input_response >= 0 else 'red'
-#
-#     if input_color == 'blue':
-#         chart_color = ['#29b5e8', '#155F7A']
-#     elif input_color == 'green':
-#         chart_color = ['#27AE60', '#12783D']
-#     elif input_color == 'orange':
-#         chart_color = ['#F39C12', '#875A12']
-#     elif input_color == 'red':
-#         chart_color = ['#E74C3C', '#781F16']
-#
-#     source = pd.DataFrame({
-#         "Topic": ['', input_text],
-#         "% value": [100 - input_response, input_response]
-#     })
-#     source_bg = pd.DataFrame({
-#         "Topic": ['', input_text],
-#         "% value": [100, 0]
-#     })
-#
-#     plot = alt.Chart(source).mark_arc(innerRadius=45, cornerRadius=15).encode(
-#         theta="% value",
-#         color=alt.Color("Topic:N",
-#                         scale=alt.Scale(
-#                             domain=[input_text, ''],
-#                             range=chart_color),
-#                         legend=None),
-#     ).properties(width=230, height=230)
-#
-#     text = plot.mark_text(align='center', color=chart_color[0],
-#                           font="Lato",
-#                           fontSize=20,
-#                           fontWeight=100,
-#                           fontStyle="italic").encode(text=alt.value(f'{input_response} %'))
-#     plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=45, cornerRadius=20).encode(
-#         theta="% value",
-#         color=alt.Color("Topic:N",
-#                         scale=alt.Scale(
-#                             domain=[input_text, ''],
-#                             range=chart_color),
-#                         legend=None),
-#     ).properties(width=230, height=230)
-#
-#     return plot_bg + plot + text
-
-
 def write_stream_text(text, sped=0.02):
+    """
+    Simulates the typing of a string word by word, where each word appears with a delay.
+    Useful for creating a dynamic, typing-like effect in applications such as Streamlit.
+
+    Args:
+        text (str): The input string to be displayed with a typing effect.
+        sped (float, optional): The time delay (in seconds) between each word being displayed. Default is 0.02 seconds.
+
+    Yields:
+        str: The next word of the input string to be displayed.
+
+    Example:
+        # In a Streamlit application:
+        for word in write_stream_text("Hello, this is a typing effect!", sped=0.1):
+            st.write(word)
+    """
     for word in text.split(" "):
         yield word + " "
         time.sleep(sped)
-
-
-# def make_heatmap(input_df, input_y, input_x, input_color, input_color_theme):
-#     heatmap = alt.Chart(input_df, width=200).mark_rect().encode(
-#             y=alt.Y(f'{input_y}:O', axis=alt.Axis(title="Year", titleFontSize=18, titlePadding=15, titleFontWeight=900, labelAngle=0)),
-#             x=alt.X(f'{input_x}:O', axis=alt.Axis(title="", titleFontSize=18, titlePadding=15, titleFontWeight=900)),
-#             color=alt.Color(f'max({input_color}):Q',
-#                              legend=None,
-#                              scale=alt.Scale(scheme=input_color_theme)),
-#             stroke=alt.value('black'),
-#             strokeWidth=alt.value(0.25),
-#         ).properties(width=300
-#         ).configure_axis(
-#         labelFontSize=12,
-#         titleFontSize=12)
-#     return heatmap
