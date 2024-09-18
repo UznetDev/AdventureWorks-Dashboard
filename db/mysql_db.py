@@ -117,7 +117,7 @@ class Database:
                 SELECT DAY(ssoh.OrderDate) AS day, 
                     SUM(ssod.OrderQty) AS count 
                 FROM `Sales_SalesOrderHeader` ssoh 
-                JOIN `Sales_SalesOrderDetail` ssod 
+                LEFT JOIN `Sales_SalesOrderDetail` ssod 
                 USING(SalesOrderID)
                 GROUP BY DAY(ssoh.OrderDate)
                 ORDER BY DAY(ssoh.OrderDate);
@@ -147,9 +147,9 @@ class Database:
         """
         try:
             sql = """
-            SELECT SUM(TotalDue * OrderQty )
+            SELECT SUM(TotalDue * OrderQty)
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh 
+            LEFT JOIN Sales_SalesOrderHeader soh 
             ON sod.SalesOrderID = soh.SalesOrderID"""
             self.cursor.execute(sql)
             return self.cursor.fetchone()[0]
@@ -176,9 +176,9 @@ class Database:
         """
         try:
             sql = """
-            SELECT SUM(LineTotal * OrderQty )
+            SELECT SUM(LineTotal * OrderQty)
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh 
+            LEFT JOIN Sales_SalesOrderHeader soh 
             ON sod.SalesOrderID = soh.SalesOrderID"""
             self.cursor.execute(sql)
             return self.cursor.fetchone()[0]
@@ -273,7 +273,7 @@ class Database:
             sql = """
             SELECT SUM(sod.LineTotal - p.StandardCost * sod.OrderQty) AS profit
             FROM Sales_SalesOrderDetail sod
-            JOIN Production_Product p
+            LEFT JOIN Production_Product p
             USING(ProductID)
             """
             self.cursor.execute(sql)
@@ -350,13 +350,13 @@ class Database:
                     pc.Name AS category, 
                     SUM({option} * OrderQty) AS val
                     FROM Sales_SalesOrderDetail sod
-                    JOIN Sales_SalesOrderHeader as soh
+                    LEFT JOIN Sales_SalesOrderHeader as soh
                     USING(SalesOrderID)
-                    JOIN Production_Product p 
+                    LEFT JOIN Production_Product p 
                     USING(ProductID)
-                    JOIN Production_ProductSubcategory psc
+                    LEFT JOIN Production_ProductSubcategory psc
                     USING(ProductSubcategoryID)
-                    JOIN Production_ProductCategory pc
+                    LEFT JOIN Production_ProductCategory pc
                     USING(ProductCategoryID)
                     GROUP BY category
                     ORDER BY val DESC"""
@@ -391,11 +391,11 @@ class Database:
                     pc.Name AS ProductCategory, 
                     SUM({option}) AS TotalSold
                 FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
-                JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                LEFT JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
+                LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
+                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                 GROUP BY st.Name, pc.Name
                 ORDER BY TotalSold DESC
             """
@@ -430,16 +430,16 @@ class Database:
                     pc.Name AS ProductCategory, 
                     SUM({option}) AS TotalSales
                 FROM Sales_SalesOrderHeader soh
-                JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
-                JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
-                JOIN Person_Person pp ON c.PersonID = pp.BusinessEntityID
-                JOIN Person_BusinessEntityAddress bea ON pp.BusinessEntityID = bea.BusinessEntityID
-                JOIN Person_Address a ON bea.AddressID = a.AddressID
-                JOIN Person_StateProvince sp ON a.StateProvinceID = sp.StateProvinceID
-                JOIN Person_CountryRegion cr ON sp.CountryRegionCode = cr.CountryRegionCode
+                LEFT JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+                LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
+                LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                LEFT JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
+                LEFT JOIN Person_Person pp ON c.PersonID = pp.BusinessEntityID
+                LEFT JOIN Person_BusinessEntityAddress bea ON pp.BusinessEntityID = bea.BusinessEntityID
+                LEFT JOIN Person_Address a ON bea.AddressID = a.AddressID
+                LEFT JOIN Person_StateProvince sp ON a.StateProvinceID = sp.StateProvinceID
+                LEFT JOIN Person_CountryRegion cr ON sp.CountryRegionCode = cr.CountryRegionCode
                 GROUP BY cr.Name, pc.Name
                 ORDER BY TotalSales DESC
             """
@@ -478,11 +478,11 @@ class Database:
                            pc.Name AS product_category, 
                            SUM({option}) AS category_sales
                     FROM Sales_SalesOrderHeader s
-                    JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
-                    JOIN Production_Product p ON sod.ProductID = p.ProductID
+                    LEFT JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
+                    LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
                     LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
                     LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
-                    JOIN month m ON MONTH(s.DueDate) = m.number
+                    LEFT JOIN month m ON MONTH(s.DueDate) = m.number
                     GROUP BY m.name, m.number, pc.Name
                     ORDER BY m.number
                 """
@@ -492,12 +492,12 @@ class Database:
                 sql = f"""
                     SELECT m.name AS month, SUM({option}) AS TotalSales
                     FROM Sales_SalesOrderDetail sod
-                    JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                    JOIN Production_Product p ON sod.ProductID = p.ProductID
+                    LEFT JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                    LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
                     LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
                     LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                     LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
-                    JOIN month m ON MONTH(soh.DueDate) = m.number
+                    LEFT JOIN month m ON MONTH(soh.DueDate) = m.number
                 """
                 conditions = []
                 params = []
@@ -550,10 +550,10 @@ class Database:
                            pc.Name AS product_category, 
                            SUM({option}) AS category_sales
                     FROM Sales_SalesOrderHeader s
-                    JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
-                    JOIN Production_Product p ON sod.ProductID = p.ProductID
-                    JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
-                    JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
+                    LEFT JOIN Sales_SalesOrderDetail sod ON s.SalesOrderID = sod.SalesOrderID
+                    LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
+                    LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
+                    LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                     GROUP BY year, product_category
                     ORDER BY year
                 """
@@ -561,11 +561,12 @@ class Database:
                 return self.cursor.fetchall()
             else:
                 sql = f"""
-                    SELECT YEAR(soh.OrderDate) AS Year, 
+                    SELECT YEAR(soh.OrderDate) AS Year,
                            SUM({option}) AS TotalSales
                     FROM Sales_SalesOrderDetail sod
-                    JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                    JOIN Production_Product p ON sod.ProductID = p.ProductID
+                    LEFT JOIN Sales_SalesOrderHeader soh ON
+                      sod.SalesOrderID = soh.SalesOrderID
+                    LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
                     LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
                     LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                     LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
@@ -615,8 +616,8 @@ class Database:
             sql = f"""
                 SELECT sr.ReasonType, SUM(soh.TotalDue) AS {option}
                 FROM Sales_SalesOrderHeader soh
-                JOIN Sales_SalesOrderHeaderSalesReason sohsr ON soh.SalesOrderID = sohsr.SalesOrderID
-                JOIN Sales_SalesReason sr ON sohsr.SalesReasonID = sr.SalesReasonID
+                LEFT JOIN Sales_SalesOrderHeaderSalesReason sohsr ON soh.SalesOrderID = sohsr.SalesOrderID
+                LEFT JOIN Sales_SalesReason sr ON sohsr.SalesReasonID = sr.SalesReasonID
                 GROUP BY sr.ReasonType
             """
             self.cursor.execute(sql)
@@ -659,9 +660,9 @@ class Database:
                        ST_Y(pat.SpatialLocation) AS Latitude,
                        SUM({value_column}) AS value
                 FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                JOIN Person_BusinessEntityAddress pbea ON pbea.BusinessEntityID = soh.SalesPersonID
-                JOIN Person_Address pat ON pat.AddressID = pbea.AddressID
+                LEFT JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                LEFT JOIN Person_BusinessEntityAddress pbea ON pbea.BusinessEntityID = soh.SalesPersonID
+                LEFT JOIN Person_Address pat ON pat.AddressID = pbea.AddressID
                 GROUP BY city, Longitude, Latitude
             """
             self.cursor.execute(sql)
@@ -710,7 +711,7 @@ class Database:
                        END AS Flag,
                        SUM({value_column}) AS TotalValue
                 FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                LEFT JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
                 {where_clause}
                 GROUP BY Flag
             """
@@ -800,8 +801,8 @@ class Database:
                    SUM(soh.Freight / soh.SubTotal * sod.LineTotal) AS DeliveryCost,
                    SUM(sod.NetProfit) AS NetProfit
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-            JOIN Production_Product p ON sod.ProductID = p.ProductID
+            LEFT JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+            LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
             LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
             LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
             LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
@@ -854,9 +855,9 @@ class Database:
                 SELECT sm.Name AS ShipMethod, 
                 SUM({option}) AS value
                 FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                JOIN Purchasing_ShipMethod sm ON soh.ShipMethodID = sm.ShipMethodID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                LEFT JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                LEFT JOIN Purchasing_ShipMethod sm ON soh.ShipMethodID = sm.ShipMethodID
+                LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
                 LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
                 LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                 LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
@@ -932,9 +933,9 @@ class Database:
                     SELECT DAY(soh.OrderDate) AS Day, 
                            SUM({option}) AS TotalSales
                     FROM Sales_SalesOrderDetail sod
-                    JOIN Sales_SalesOrderHeader soh 
+                    LEFT JOIN Sales_SalesOrderHeader soh 
                     ON sod.SalesOrderID = soh.SalesOrderID
-                    JOIN Production_Product p 
+                    LEFT JOIN Production_Product p 
                     ON sod.ProductID = p.ProductID
                     LEFT JOIN Production_ProductSubcategory psc 
                     ON p.ProductSubcategoryID = psc.ProductSubcategoryID
@@ -992,9 +993,9 @@ class Database:
                    pc.Name AS Category,
                    SUM({option}) AS TotalSales
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh
+            LEFT JOIN Sales_SalesOrderHeader soh
             ON sod.SalesOrderID = soh.SalesOrderID
-            JOIN Production_Product p ON sod.ProductID = p.ProductID
+            LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
             LEFT JOIN Production_ProductSubcategory psc 
             ON p.ProductSubcategoryID = psc.ProductSubcategoryID
             LEFT JOIN Production_ProductCategory pc
@@ -1048,12 +1049,12 @@ class Database:
                    pc.Name AS Category, 
                    SUM({option}) AS TotalSales
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-            JOIN Production_Product p ON sod.ProductID = p.ProductID
+            LEFT JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+            LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
             LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
             LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
             LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
-            JOIN month m ON MONTH(soh.DueDate) = m.number
+            LEFT JOIN month m ON MONTH(soh.DueDate) = m.number
             """
             conditions = []
             params = []
@@ -1105,8 +1106,8 @@ class Database:
                    pc.Name AS Category, 
                    SUM({option}) AS TotalSales
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-            JOIN Production_Product p ON sod.ProductID = p.ProductID
+            LEFT JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+            LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
             LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
             LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
             LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
@@ -1183,8 +1184,8 @@ class Database:
             pa.StateProvinceID,
             pa.PostalCode
         FROM Sales_SalesOrderHeader soh
-        JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
-        JOIN Production_Product p ON sod.ProductID = p.ProductID
+        LEFT JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+        LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
         LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
         LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
         LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
@@ -1275,8 +1276,8 @@ class Database:
                 SELECT IFNULL(p.Color, 'No Color')
                 AS Color, SUM(sod.LineTotal) AS value
                 FROM Sales_SalesOrderDetail sod
-                JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
-                JOIN Production_Product p ON sod.ProductID = p.ProductID
+                LEFT JOIN Sales_SalesOrderHeader soh ON sod.SalesOrderID = soh.SalesOrderID
+                LEFT JOIN Production_Product p ON sod.ProductID = p.ProductID
                 LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
                 LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
                 LEFT JOIN Sales_SalesTerritory st ON soh.TerritoryID = st.TerritoryID
@@ -1333,8 +1334,8 @@ class Database:
             SELECT v.Name AS VendorName, 
                 SUM({option}) AS MetricValue
             FROM Purchasing_PurchaseOrderHeader poh
-            JOIN Purchasing_PurchaseOrderDetail pod ON poh.PurchaseOrderID = pod.PurchaseOrderID
-            JOIN Purchasing_Vendor v ON poh.VendorID = v.BusinessEntityID
+            LEFT JOIN Purchasing_PurchaseOrderDetail pod ON poh.PurchaseOrderID = pod.PurchaseOrderID
+            LEFT JOIN Purchasing_Vendor v ON poh.VendorID = v.BusinessEntityID
             """
 
             conditions = []
@@ -1381,9 +1382,9 @@ class Database:
                 IFNULL(pc.Name, 'No Category') AS CategoryName, 
                 SUM({option}) AS MetricValue
             FROM Purchasing_PurchaseOrderHeader poh
-            JOIN Purchasing_PurchaseOrderDetail pod ON poh.PurchaseOrderID = pod.PurchaseOrderID
-            JOIN Purchasing_Vendor v ON poh.VendorID = v.BusinessEntityID
-            JOIN Production_Product p ON pod.ProductID = p.ProductID
+            LEFT JOIN Purchasing_PurchaseOrderDetail pod ON poh.PurchaseOrderID = pod.PurchaseOrderID
+            LEFT JOIN Purchasing_Vendor v ON poh.VendorID = v.BusinessEntityID
+            LEFT JOIN Production_Product p ON pod.ProductID = p.ProductID
             LEFT JOIN Production_ProductSubcategory psc ON p.ProductSubcategoryID = psc.ProductSubcategoryID
             LEFT JOIN Production_ProductCategory pc ON psc.ProductCategoryID = pc.ProductCategoryID
             """
@@ -1447,11 +1448,11 @@ class Database:
             SELECT psc.Name AS Subcategory, 
             SUM({option}) AS val
             FROM Sales_SalesOrderDetail sod
-            JOIN Sales_SalesOrderHeader soh 
+            LEFT JOIN Sales_SalesOrderHeader soh 
             ON sod.SalesOrderID = soh.SalesOrderID
-            JOIN Production_Product p 
+            LEFT JOIN Production_Product p 
             ON sod.ProductID = p.ProductID
-            JOIN Production_ProductSubcategory psc 
+            LEFT JOIN Production_ProductSubcategory psc 
             ON p.ProductSubcategoryID = psc.ProductSubcategoryID
             """
 
@@ -1506,10 +1507,10 @@ class Database:
             SELECT s.Name AS StoreName, 
             SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
-            JOIN Sales_SalesOrderDetail sod 
+            LEFT JOIN Sales_SalesOrderDetail sod 
             ON soh.SalesOrderID = sod.SalesOrderID
-            JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
-            JOIN Sales_Store s ON c.StoreID = s.BusinessEntityID
+            LEFT JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
+            LEFT JOIN Sales_Store s ON c.StoreID = s.BusinessEntityID
             """
 
             conditions = []
@@ -1546,11 +1547,11 @@ class Database:
             'No Category') AS CategoryName, 
             SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
-            JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
-            JOIN Sales_Store s ON c.StoreID = s.BusinessEntityID
-            JOIN Sales_SalesOrderDetail sod 
+            LEFT JOIN Sales_Customer c ON soh.CustomerID = c.CustomerID
+            LEFT JOIN Sales_Store s ON c.StoreID = s.BusinessEntityID
+            LEFT JOIN Sales_SalesOrderDetail sod 
             ON soh.SalesOrderID = sod.SalesOrderID
-            JOIN Production_Product p 
+            LEFT JOIN Production_Product p 
             ON sod.ProductID = p.ProductID
             LEFT JOIN Production_ProductSubcategory psc 
             ON p.ProductSubcategoryID = psc.ProductSubcategoryID
@@ -1599,11 +1600,11 @@ class Database:
             SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, 
             SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
-            JOIN Sales_SalesOrderDetail sod
+            LEFT JOIN Sales_SalesOrderDetail sod
             ON sod.SalesOrderID = soh.SalesOrderID
-            JOIN Sales_Customer c 
+            LEFT JOIN Sales_Customer c 
             ON soh.CustomerID = c.CustomerID
-            JOIN Person_Person p 
+            LEFT JOIN Person_Person p 
             ON c.PersonID = p.BusinessEntityID
             """
 
@@ -1648,13 +1649,13 @@ class Database:
             IFNULL(pc.Name, 'No Category') AS category, 
             SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
-            JOIN Sales_Customer c 
+            LEFT JOIN Sales_Customer c 
             ON soh.CustomerID = c.CustomerID
-            JOIN Person_Person p 
+            LEFT JOIN Person_Person p 
             ON c.PersonID = p.BusinessEntityID
-            JOIN Sales_SalesOrderDetail sod 
+            LEFT JOIN Sales_SalesOrderDetail sod 
             ON soh.SalesOrderID = sod.SalesOrderID
-            JOIN Production_Product p2 
+            LEFT JOIN Production_Product p2 
             ON sod.ProductID = p2.ProductID
             LEFT JOIN Production_ProductSubcategory psc 
             ON p2.ProductSubcategoryID = psc.ProductSubcategoryID
@@ -1705,17 +1706,17 @@ class Database:
                 pc.Name AS category,
                 SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
-            JOIN Sales_SalesOrderDetail sod 
+            LEFT JOIN Sales_SalesOrderDetail sod 
             ON soh.SalesOrderID = sod.SalesOrderID
-            JOIN Sales_SalesPerson sp 
+            LEFT JOIN Sales_SalesPerson sp 
             ON soh.SalesPersonID = sp.BusinessEntityID
-            JOIN Person_Person p 
+            LEFT JOIN Person_Person p 
             ON sp.BusinessEntityID = p.BusinessEntityID
-            JOIN Production_Product pr 
+            LEFT JOIN Production_Product pr 
             ON sod.ProductID = pr.ProductID
-            JOIN Production_ProductSubcategory psc 
+            LEFT JOIN Production_ProductSubcategory psc 
             ON pr.ProductSubcategoryID = psc.ProductSubcategoryID
-            JOIN Production_ProductCategory pc 
+            LEFT JOIN Production_ProductCategory pc 
             ON psc.ProductCategoryID = pc.ProductCategoryID
             """
 
@@ -1758,9 +1759,9 @@ class Database:
             SELECT CONCAT(p.FirstName, ' ', p.LastName) AS name, 
                    SUM({option}) AS val
             FROM Sales_SalesOrderHeader soh
-            JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
-            JOIN Sales_SalesPerson sp ON soh.SalesPersonID = sp.BusinessEntityID
-            JOIN Person_Person p ON sp.BusinessEntityID = p.BusinessEntityID
+            LEFT JOIN Sales_SalesOrderDetail sod ON soh.SalesOrderID = sod.SalesOrderID
+            LEFT JOIN Sales_SalesPerson sp ON soh.SalesPersonID = sp.BusinessEntityID
+            LEFT JOIN Person_Person p ON sp.BusinessEntityID = p.BusinessEntityID
             """
 
             conditions = []

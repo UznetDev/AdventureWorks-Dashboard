@@ -47,10 +47,13 @@ def app():
 
 
     OrderDate_Day = OrderDate.day
+    OrderDate_Month = OrderDate.month
     OrderDate_Year = OrderDate.year
     DueDate_Day = DueDate.day
+    DueDate_Month = DueDate.month
     DueDate_Year = DueDate.year
     ShipDate_Day = ShipDate.day
+    ShipDate_Month = ShipDate.month
     ShipDate_Year = ShipDate.year
 
 
@@ -62,10 +65,13 @@ def app():
         'ListPrice': [ListPrice],
         'AccountNumber': [AccountNumber],
         'OrderDate_Day': [OrderDate_Day],
+        'OrderDate_Month': [OrderDate_Month],
         'OrderDate_Year': [OrderDate_Year],
         'DueDate_Day': [DueDate_Day],
+        'DueDate_Month': [DueDate_Month],
         'DueDate_Year': [DueDate_Year],
         'ShipDate_Day': [ShipDate_Day],
+        'ShipDate_Month': [ShipDate_Month],
         'ShipDate_Year': [ShipDate_Year],
         'Color': [Color],
         'CategoryName': [CategoryName],
