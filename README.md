@@ -140,6 +140,8 @@ AdventureWorks-Dashboard/
 │
 ├── data/                                # Folder for storing raw data
 │   └── config.py                        # A collection of necessary variables
+├── database/                            # Database folder
+│   └── database.sql                     # Database for MySql
 │
 ├── db/                                  # SQL queries and database operations
 │   └── mysql_db.py                      # Class for working with MySQL database
