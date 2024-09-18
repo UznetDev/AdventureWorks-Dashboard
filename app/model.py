@@ -55,7 +55,6 @@ def app():
 
 
     input_data = pd.DataFrame({
-        'SalesOrderID': [SalesOrderID],
         'OnlineOrderFlag': [OnlineOrderFlag],
         'OrderQty': [OrderQty],
         'LineTotal': [LineTotal],
