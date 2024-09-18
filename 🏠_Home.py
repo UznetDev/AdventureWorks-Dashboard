@@ -131,9 +131,6 @@ with col2:
 with col3:
     if st.button("Page 3"):
         st.session_state["nav"] = "3"
-# with col4:
-#     if st.button("Page 3"):
-#         st.session_state["nav"] = "4"
 with col4:
     if st.button("Page 4"):
         st.session_state["nav"] = "4"
@@ -152,9 +149,6 @@ elif selected_page == "2":
 elif selected_page == "3":
     from app.page3 import app
     app(option=option)
-# elif selected_page == "4":
-#     from app.page4 import app
-#     app(option=option)
 elif selected_page == "4":
     from app.page5 import app
     app(option=option)
