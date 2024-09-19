@@ -29,6 +29,7 @@ The Sales Dashboard app allows users to input various sales-related data fields 
 
 - **Python**: Main programming language.
 - **Streamlit**: Web framework for building the user interface.
+- **Plotly**: For visualition data on streamlit.
 - **scikit-learn**: For training and using the machine learning model.
 - **joblib**: For saving and loading the trained model.
 - **MySQL**: Database for storing sales data.
