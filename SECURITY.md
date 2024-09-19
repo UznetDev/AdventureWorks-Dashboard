@@ -9,3 +9,4 @@
 ## Reporting a Vulnerability
 
 The machine learning part is not fully completed yet and may provide incorrect information.
+Those who wish can give their excuses.
