@@ -32,7 +32,6 @@ The Sales Dashboard app allows users to input various sales-related data fields 
 - **scikit-learn**: For training and using the machine learning model.
 - **joblib**: For saving and loading the trained model.
 - **MySQL**: Database for storing sales data.
-- **GitHub**: Version control and project management.
 
 ## Installation
 
